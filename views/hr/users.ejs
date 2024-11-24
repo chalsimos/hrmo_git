@@ -1,0 +1,84 @@
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>System Accounts</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">System Accounts</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+              </section>
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                            <div class="alert alert-success">
+                                <%= successMessage %>
+                            </div>
+                            <% } %>
+                            <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                            <div class="alert alert-danger">
+                                <%= errorMessage %>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Account</h3>
+                                </div>
+                                <div class="card-body">
+                                    <table id="faculty" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Campus</th>
+                                                <th>Role</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% data.users.forEach(user => { %>
+                                            <tr>
+                                                <td><%= user.name %></td>
+                                                <td><%= user.email %></td>
+                                                <td><%= user.campus %></td>
+                                                <td><%= user.role %></td>
+                                                <td></td>
+                                            </tr>
+                                            <% }); %>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Campus</th>
+                                                <th>Role</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+            </section>
+        </div>
+    </div>
+            <%- include('../partials/end') %>

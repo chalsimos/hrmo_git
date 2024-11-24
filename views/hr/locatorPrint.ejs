@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personnel Locator Slip</title>
+  <style>
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 6mm; 
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0; 
+      }
+
+      .page {
+        display: flex;
+        justify-content: space-between;
+        page-break-after: always;
+        height: calc(100vh - 20mm); 
+      }
+
+      .container {
+        width: calc(50% - 2mm); 
+        padding: 15px; 
+        border: 1px solid #000;
+        box-sizing: border-box;
+        margin: 0; 
+        height: 110%; 
+      }
+
+      .header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2em; 
+      }
+
+      .subheader, .footer, .certification {
+        text-align: center;
+        font-size: 0.85em; 
+      }
+
+      .dateUnderline {
+        border-bottom: 1px solid #000;
+        display: inline-block;
+        width: 120px; 
+        text-align: center;
+      }
+
+      .dateRight {
+        text-align: right;
+        margin-top: 5px; 
+      }
+
+      .title {
+        text-align: center;
+        font-size: 1.3em;
+        margin: 15px 0; 
+        font-weight: bold;
+        text-decoration: underline;
+      }
+
+      .content {
+        line-height: 1.4; 
+      }
+
+      .approved-section, .certification {
+        margin-top: 10px; 
+      }
+
+      .signature {
+        width: 180px; 
+        border-bottom: 1px solid #000;
+        display: inline-block;
+        margin-right: 5px; 
+      }
+
+      .input-line {
+        border-bottom: 1px solid #000;
+        display: inline-block;
+        width: 180px; 
+      }
+
+      .qr-code {
+        float: right;
+        width: 70px; 
+        height: 70px; 
+      }
+
+      table {
+        width: 100%;
+        margin-top: 5px; 
+      }
+
+      td {
+        padding: 3px; 
+      }
+    }
+  </style>
+   <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</head>
+<body>
+<% for (let i = 0; i < slipsData.length; i += 2) { %>
+  <div class="page">
+    <div class="container">
+      <div class="header">Mindoro State University</div>
+      <div class="subheader">
+        Victoria, Oriental Mindoro 5205 Philippines<br>
+        Email: universitypresident@minsu.edu.ph | Website: www.minsu.edu.ph | Mobile: +63 977 846 72 28
+      </div>
+      <div class="dateRight">
+        <span class="dateUnderline"></span> 2024<br>
+        <small>DATE</small> - LocatorNO: <%= slipsData[i].id %>
+      </div>
+      <div class="title">PERSONNEL LOCATOR SLIP</div>
+      <div class="content">
+        <p>The undersigned requests to leave his/her post at _______ o'clock am/pm today. He/She shall be at _____________________________</p>
+        <p>For the following reasons:</p>
+        <p>____________________________________________________________________</p>
+        <p>____________________________________________________________________</p>
+        <p>Expected time of return is __________________________o'clock am/pm</p>
+      </div>
+      <div class="approved-section">
+        <p><b>APPROVED:</b></p>
+        <div style="display: flex; justify-content: space-between;">
+          <p>____ Official</p>  
+          <p><span class="signature"></span><br> Signature over Printed Name</p>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <p>____ Personal</p>
+          <p><span class="input-line"></span><br> Designation</p>
+        </div>
+      </div>
+      <br>
+      <div class="footer"><b><%= data.signatory.name.toUpperCase() %></b>
+            <img class="qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://minsu-two.vercel.app/return/<%= slipsData[i].encodedId %>" alt="QR Code">
+            <br><%= data.signatory.position.toUpperCase() %></div>
+        <br><br>
+            <div class="certification">
+        <b>CERTIFICATE OF APPEARANCE</b>
+        <p>I certify that the above personnel appeared on the date/s and purpose indicated below:</p>
+        <table>
+          <tr><td>DATE</td><td>NAME</td><td>SIGNATURE</td></tr>
+          <tr><td>____________________</td><td>____________________</td><td>____________________</td></tr>
+          <tr><td>____________________</td><td>____________________</td><td>____________________</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <% if (i + 1 < slipsData.length) { %>
+      <div class="container">
+        <!-- Duplicate Locator Slip content for the second slip on the page -->
+        <div class="header">Mindoro State University</div>
+        <div class="subheader">
+          Victoria, Oriental Mindoro 5205 Philippines<br>
+          Email: universitypresident@minsu.edu.ph | Website: www.minsu.edu.ph | Mobile: +63 977 846 72 28
+        </div>
+        <div class="dateRight">
+          <span class="dateUnderline"></span> 2024<br>
+          <small>DATE</small> - LocatorNO: <%= slipsData[i + 1].id %>
+        </div>
+        <div class="title">PERSONNEL LOCATOR SLIP</div>
+        <div class="content">
+          <p>The undersigned requests to leave his/her post at _______ o'clock am/pm today. He/She shall be at _____________________________</p>
+          <p>For the following reasons:</p>
+          <p>____________________________________________________________________</p>
+          <p>____________________________________________________________________</p>
+          <p>Expected time of return is __________________________o'clock am/pm</p>
+        </div>
+        <div class="approved-section">
+          <p><b>APPROVED:</b></p>
+          <div style="display: flex; justify-content: space-between;">
+            <p>____ Official</p>  
+            <p><span class="signature"></span><br> Signature over Printed Name</p>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <p>____ Personal</p>
+            <p><span class="input-line"></span><br> &nbsp;&nbsp;&nbsp;Designation</p>
+          </div>
+        </div>
+        <br>
+        <div class="footer"><b><%= data.signatory.name.toUpperCase() %></b>
+            <img class="qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://minsu-two.vercel.app/return/<%= slipsData[i + 1].encodedId %>" alt="QR Code"><br><%= data.signatory.position.toUpperCase() %></div>
+          <br><br>
+            <div class="certification">
+          <b>CERTIFICATE OF APPEARANCE</b>
+          <p>I certify that the above personnel appeared on the date/s and purpose indicated below:</p>
+          <table>
+            <tr><td>DATE</td><td>NAME</td><td>SIGNATURE</td></tr>
+            <tr><td>____________________</td><td>____________________</td><td>____________________</td></tr>
+            <tr><td>____________________</td><td>____________________</td><td>____________________</td></tr>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </div>
+<% } %>
+</body>
+</html>

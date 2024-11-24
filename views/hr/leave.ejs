@@ -1,0 +1,150 @@
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>Leave Report for <%= month %>/<%= year %></h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">leave-report</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+              </section>
+              <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- splash message dito -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        Leave Report</h3>
+                                </div>
+                                <div class="card-body">
+
+ <h1>On-Leave</h1>
+
+    <!-- Display table only if there is data -->
+    <% if (onleave.length > 0) { %>
+    <table id="leave" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Employee No</th>
+                <th>Name</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Others</th>
+                <th>Days</th> <!-- Added a column for No. of Days -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Iterate over the onleave array and display each leave record -->
+            <% onleave.forEach(leave => { %>
+            <tr>
+                <td><%= leave.empno %></td>
+                <td><%= leave.name %></td>
+                <td><%= new Date(leave.from).toLocaleDateString() %></td> <!-- Format the date -->
+                <td><%= new Date(leave.to).toLocaleDateString() %></td> <!-- Format the date -->
+                <td><%= leave.reason %></td>
+                <td><%= leave.others %></td>
+                
+                <% 
+                    // Compute the number of leave days
+                    const fromDate = new Date(leave.from);
+                    const toDate = new Date(leave.to);
+                    const timeDifference = toDate - fromDate;
+                    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) + 1; // Including both start and end date
+                %>
+                <td><%= daysDifference %> days</td> <!-- Display the computed number of leave days -->
+            </tr>
+            <% }); %>
+            <tfoot>
+            <tr>
+                <th>Employee No</th>
+                <th>Name</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Others</th>
+                <th>Days</th> <!-- Added a column for No. of Days -->
+            </tr>
+        </tfoot>
+        </tbody>
+    </table>
+    <% } else { %>
+    <p>No leave records found for this month.</p>
+    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 <!-- Upcoming Leave Records -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Upcoming Leaves</h3>
+                                </div>
+                                <div class="card-body">
+                                    <% if (upcomingLeaves.length > 0) { %>
+                                    <table id="leave-incoming" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee No</th>
+                                                <th>Name</th>
+                                                <th>From</th>
+                                                <th>To</th>
+                                                <th>Reason</th>
+                                                <th>Others</th>
+                                                <th>Days</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% upcomingLeaves.forEach(leave => { %>
+                                            <tr>
+                                                <td><%= leave.empno %></td>
+                                                <td><%= leave.name %></td>
+                                                <td><%= new Date(leave.from).toLocaleDateString() %></td>
+                                                <td><%= new Date(leave.to).toLocaleDateString() %></td>
+                                                <td><%= leave.reason %></td>
+                                                <td><%= leave.others %></td>
+                                                <% 
+                                                    const fromDate = new Date(leave.from);
+                                                    const toDate = new Date(leave.to);
+                                                    const timeDifference = toDate - fromDate;
+                                                    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) + 1; 
+                                                %>
+                                                <td><%= daysDifference %> days</td>
+                                            </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                    <% } else { %>
+                                    <p>No upcoming leave records found.</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+              </section>
+      
+        </div>
+    </div>
+</body>
+<%- include('../partials/end') %>

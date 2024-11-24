@@ -1,0 +1,131 @@
+    <%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+    </div>
+<%- include('../partials/end') %>
+<%- include('../partials/aside') %> 
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Payrol Manager</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">Payroll</li>
+                      </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="content">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Payroll Manager</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Year</label>
+                                <select name="year" class="form-control">
+                                <option value="">Select Year</option>
+                                <% years.forEach(year => { %>
+                                    <option value="<%= year %>"><%= year %></option>
+                                <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Month</label>
+                                <select name="month" class="form-control">
+                                <option value="">Month</option>
+                                <% months.forEach(month => { %>
+                                    <option value="<%= month.value %>"><%= month.name %></option>
+                                <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Filter Type</label>
+                                <select name="employeetype" id="employeetype" class="form-control">
+                                    <option value="COS">COS</option>
+                                    <option value="JO">JO</option>
+                                    <option value="Permanent">Permanent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-primary w-100">Filter Options</button>
+                            </div>
+                            </div>
+                            <br>
+                            <table id="faculty" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>employee Id</th>
+                                        <th>Name</th>
+                                        <th>Division</th>
+                                        <th>deductions(itemized)</th>
+                                        <th>Net Pay</th>
+                                        <th>Year/Month</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% data.employee.forEach(emp => { %>
+                                        <tr>
+                                            <td><%= emp.employeeId %></td>
+                                            <td> <a href="/accounting/payroll/<%= emp.employeeId %>"><%= emp.name %></a></td>
+                                            <td></td>
+                                            <td>
+                                                <ul>
+                                                    <li>SSS: <%= emp.deductions.sss.toFixed(2) %></li>
+                                                    <li>PhilHealth: <%= emp.deductions.philhealth.toFixed(2) %></li>
+                                                    <li>Pag Ibig: <%= emp.deductions.pagibig.toFixed(2) %></li>
+                                                    <li>Loan/s: <%= emp.deductions.loans.toFixed(2) %></li>
+                                                    <li>LWOP: <%= emp.deductions.leaveWithoutPay.toFixed(2) %></li>
+                                                    <li>Total Deductions: <%= emp.deductions.totalDeductions.toFixed(2) %></li>
+                                                </ul>                                                                                                                                        
+                                            </td>
+                                            <td><ul>
+                                                <li>Gross Pay: <%= emp.basicSalary.toFixed(2) %></li>
+                                                <li>Net Pay: <b><%= emp.netPay.toFixed(2) %></b></li>
+                                            </ul></td>
+                                            <td><%= emp.payPeriod.month %> - <%= emp.payPeriod.year %></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-default">Action</button>
+                                                    <button type="button" class="btn btn-default dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu" style="">
+                                                    <a class="dropdown-item" href="#">Modify Deductions</a>
+                                                    <a class="dropdown-item" href="#">Run Auto - Validator</a>
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="#">Payslip</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>employee Id</th>
+                                        <th>Name</th>
+                                        <th>Division</th>
+                                        <th>deductions(itemized)</th>
+                                        <th>Net Pay</th>
+                                        <th>Year/Month</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

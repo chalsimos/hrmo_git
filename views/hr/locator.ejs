@@ -1,0 +1,254 @@
+<%- include('../partials/top') %>
+<style>
+  #suggestions {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+  }
+  .suggestion-item:hover {
+    background-color: #f0f0f0;
+  }
+</style>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+         <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>List of Employees</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">employee</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+            </section>
+            <section class="content">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="card">
+                      <div class="card-header">
+                        <h3 class="card-title">
+                          Filed Locator
+                        </h3>
+                      </div>
+                      <div class="card-body">
+                          <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#encodeLocator">Encode</button>
+                          
+                          <table id="faculty" class="table table-bordered table-striped">
+                            <tr>
+                              <th>Locator ID</th>
+                              <th>Employee</th>
+                              <th>Departure/Arrival</th>
+                              <th>Location/Purpose</th>
+                            </tr>
+                            <tbody>
+                              <% empl.forEach(e =>{ %>
+                              <tr>
+                                <td><%= e.locatorNo %></td>
+                                <td><%= e.empname %></td>
+                                <td><%= e.departure %> - <%= e.arrival %></td>
+                                <td>
+                                  <ul>
+                                    <li><%= e.location %></li>
+                                    <li><%= e.purpose %></li>
+                                  </ul>
+                                   </td>
+                              </tr>
+                              <% }) %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                              <th>Tracer No.</th>
+                              <th>Employee</th>
+                              <th>Departure/Arrival</th>
+                              <th>Location/Purpose</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                        <div class="alert alert-success">
+                          <%= successMessage %>
+                        </div>
+                      <% } %>
+
+                      <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                        <div class="alert alert-danger">
+                          <%= errorMessage %>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>d
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Completed Locator</h3>
+                        </div>
+                        <div class="card-body">
+                        <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#generateLocator">Generate</button>
+                          
+        <% if (matchedEmployees && matchedEmployees.length > 0) { %>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                      <th>Locator ID</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Campus</th> 
+                        <th>Location Name</th>
+                        <th>Arrival</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% matchedEmployees.forEach(employee => { %>
+                        <tr>
+                          <td><%= employee.locatorID %></td>
+                            <td><%= employee.empno %></td>
+                            <td><%= employee.empName %></td>
+                            <td><%= employee.campus %></td>
+                            <td><%= employee.locationName %></td> 
+                            <td><%= employee.dateTime%></td>
+
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No matched employees found.</p>
+        <% } %>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    <div class="modal" id="generateLocator">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Generate Locator Form</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+        
+          <form action="/generate-locator" method="post">
+            <label>Quantity</label>
+            <input type="number" class="form-control" name="quantity" placeholder="enter quantity to generate">
+          <br>
+          <button type="submit" name="ups" class="btn btn-primary">generate and print</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="encodeLocator">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Encode Locator data</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/save-endcoded" method="post">
+            <label>Quantity</label>
+            <input type="number" class="form-control" name="locatorNo" placeholder="enter locator ID no.">
+            <label>Employee Name</label>
+            <input type="text" id="employeeName" class="form-control" name="empname" placeholder="Enter employee name" autocomplete="off">
+            <div id="suggestions" class="list-group"></div>
+            <input type="hidden" id="empno" name="empno">
+
+            <label>Location</label>
+            <textarea name="location" placeholder="enter target location" class="form-control"></textarea>
+            <label>Purpose</label>
+            <input type="text" name="purpose" class="form-control" placeholder="purpose">
+            <div class="row">
+              <div class="col-md-6">
+                <label>Departure</label>
+                <input type="time" class="form-control" name="departure">
+              </div>
+              <div class="col-md-6">
+                <label>arrival</label>
+                <input type="time" class="form-control" name="arrival">
+              </div>
+            </div>
+
+          <br>
+          <button type="submit" name="ups" class="btn btn-primary">Save</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+    </body>
+<%- include('../partials/end') %>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const employeeNameInput = document.getElementById('employeeName');
+    const empnoInput = document.getElementById('empno');
+    const suggestionsBox = document.getElementById('suggestions');
+
+    employeeNameInput.addEventListener('input', async (event) => {
+      const query = event.target.value.trim();
+
+      if (query.length > 2) {
+        const response = await fetch(`/find-employee?query=${query}`);
+        const employees = await response.json();
+        suggestionsBox.innerHTML = '';
+        suggestionsBox.style.display = employees.length > 0 ? 'block' : 'none';
+        employees.forEach((employee) => {
+          const item = document.createElement('div');
+          item.className = 'suggestion-item';
+          item.textContent = `${employee.name} (${employee.empno})`;
+          item.dataset.empno = employee.empno;
+          item.dataset.name = employee.name;          
+          item.addEventListener('click', () => {
+            employeeNameInput.value = employee.name;
+            empnoInput.value = employee.empno;
+            suggestionsBox.style.display = 'none';
+          });
+          suggestionsBox.appendChild(item);
+        });
+      } else {
+        suggestionsBox.style.display = 'none';
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (!suggestionsBox.contains(event.target) && event.target !== employeeNameInput) {
+        suggestionsBox.style.display = 'none';
+      }
+    });
+  });
+</script>

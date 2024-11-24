@@ -1,0 +1,139 @@
+<%- include('../partials/top') %>
+<style>
+  #calendar {
+      width: 100%;   /* Set width to 100% of the container */
+      height: 800px; /* Adjust the height as needed */
+      margin: 20px 0; /* Optional: Add some margin for spacing */
+  }
+</style>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Attendance Data for <%= new Date(data.year, data.month - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }) %></h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active">General Form</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div><!-- /.container-fluid -->
+            </section>
+                        <section class="content">
+                            <div class="container-fluid">
+                                   <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                                    <div class="alert alert-success">
+                                        <%= successMessage %>
+                                    </div>
+                                    <% } %>
+
+                                    <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                                    <div class="alert alert-danger">
+                                        <%= errorMessage %>
+                                    </div>
+                                    <% } %>
+
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        <div class="sticky-top mb-3">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h4 class="card-title">Modify Time History</h4>
+                                                </div>
+                                                <div class="card-body">
+                                                    <form action="/update-time" method="post">
+                                                    <div id="external-events">
+                                                        <div class="form-group">
+                                                            <label for="amTimeIn">AM Time In:</label>
+                                                            <input type="text" id="amTimeIn" class="form-control" placeholder="AM Time In" readonly>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="amTimeOut">AM Time Out:</label>
+                                                            <input type="text" id="amTimeOut" name="amTimeOut" class="form-control" placeholder="AM Time Out" >
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="pmTimeIn">PM Time In:</label>
+                                                            <input type="text" id="pmTimeIn" name="pmTimeIn" class="form-control" placeholder="PM Time In" >
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="pmTimeOut">PM Time Out:</label>
+                                                            <input type="text" id="pmTimeOut" name="pmTimeOut" class="form-control" placeholder="PM Time Out" >
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="embedID">Record ID:</label>
+                                                            <input type="text" id="embedID" name="embedID" class="form-control" placeholder="Embed ID" readonly>
+                                                        </div>
+                                                        <div class="checkbox">
+                                                            <label for="drop-remove">
+                                                                <button type="submit" class="btn btn-primary">update</button>
+                                                            </label>
+                                                        </div>
+                                                      </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-8"> <!-- Changed to col-lg-8 for more space -->
+                                        <div class="card card-primary">
+                                            <div class="card-body p-0">
+                                                <div id="calendar"></div> <!-- FullCalendar will be rendered here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+            
+            <%- include('../partials/end') %>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            
+            var year = <%- JSON.stringify(data.year) %>;  
+            var month = <%- JSON.stringify(data.month) %>; 
+
+            
+            var initialDate = new Date(year, month - 1, 1); 
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialDate: initialDate, 
+                initialView: 'dayGridMonth', 
+                events: <%- JSON.stringify(data.events) %>, 
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                },
+                eventContent: function(arg) {
+                    
+                    return {
+                        html: `${arg.event.extendedProps.amTimeIn}<br>${arg.event.extendedProps.amTimeOut}<br>${arg.event.extendedProps.pmTimeIn}<br>${arg.event.extendedProps.pmTimeOut}`
+                    };
+                },
+                eventClick: function(info) {
+                    
+                    document.getElementById('amTimeIn').value = info.event.extendedProps.amTimeIn;
+                    document.getElementById('amTimeOut').value = info.event.extendedProps.amTimeOut;
+                    document.getElementById('pmTimeIn').value = info.event.extendedProps.pmTimeIn;
+                    document.getElementById('pmTimeOut').value = info.event.extendedProps.pmTimeOut;
+                    document.getElementById('embedID').value = info.event.extendedProps.embedID;
+                    
+                    
+                }
+            });
+
+            calendar.render();  
+        });
+</script>

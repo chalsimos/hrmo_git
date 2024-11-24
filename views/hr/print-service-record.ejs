@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Record</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            border: 1px solid black;
+            padding: 20px;
+            position: relative;
+
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 120px;
+            height: auto;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 5px 0;
+        }
+        .service-record-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 0.6rem; 
+
+        }
+        .info-table td {
+            padding: 5px;
+        }
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9rem; 
+        }
+        .service-table th, .service-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        .service-table th {
+            background-color: #f2f2f2;
+            font-size: 14px;
+        }
+        .service-table td {
+            font-size: 13px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        .certified {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .certified strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .certified-signature {
+            margin-top: 50px;
+        }
+          .page-number {
+            text-align: right;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+      <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</head>
+<body>
+    <!-- <div class="container"> -->
+        <!-- Header Section -->
+        <div class="header">
+            <br><br><br><br><br><br>
+        </div>
+
+        <!-- Title -->
+        <div class="service-record-title">
+            <p>SERVICE RECORD</p>
+            <p>(To be accomplished by the Employer)</p>
+        </div>
+
+        <!-- Personal Information Table -->
+     <table class="info-table" style="width: 100%; border-collapse: collapse; text-align: center;">
+    <tr>
+        
+        <td width="9%" style="font-weight: bold; vertical-align: middle;">NAME</td>
+        <td width="19%" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%= data.name.lname.toUpperCase() %></b></td>
+        <td width="15%" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%= data.name.fname.toUpperCase() %></b></td>
+        <td width="5%" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%=data.name.mname.charAt(0).toUpperCase() %>.</b></td>
+        <td>&nbsp;</b></td>
+        <td width="40%" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%=data.name.mname.toUpperCase() %></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td style="vertical-align: middle;"><i><small>Surname</small></i></td>
+        <td style="vertical-align: middle;"><i><small>(Given Name)</small></i></td>
+        <td style="vertical-align: middle;"><i><small>(M.I.)</small></i></td>
+        <td>&nbsp;</td>
+        <td style="vertical-align: middle;"><b>(If married woman, give full maiden name)</b></td>
+    </tr>
+    <tr>
+        <% 
+        const birthdateStr = data.name.birthdate;
+        const date = new Date(birthdateStr); 
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedBirthdate = date.toLocaleDateString('en-US', options);
+        %>
+        <td width="9%" style="font-weight: bold; vertical-align: middle;">BIRTH</td>
+        <td width="25%" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%= formattedBirthdate %></b></td>
+        <td colspan="2" style="border-bottom: 1px solid black; padding: 5px; vertical-align: middle;"><b><%= data.name.birthplace %></b></td>
+        <td>&nbsp;</td>
+        <td style="vertical-align: middle;"><b> (Date herein should be checked from birth</b></td> 
+    </tr>
+    
+    <tr>
+        <td></td>
+        <td style="vertical-align: middle;"><small>(Date)</small></td>
+        <td style="vertical-align: middle;"><small>(Place)</small></td>
+        <td></td>
+        <td>&nbsp;</td>
+        <td style="vertical-align: middle;"><b> or baptismal certificate or some reliable documents)</b></td>
+    </tr>
+</table>
+
+
+
+                <div class="page-number">Page 1</div>
+        <table class="service-table">
+            <thead>
+                <tr>
+                    <th colspan="2">Service <br>Inclusive Dates</th>
+                    <th colspan="3">RECORD OF APPOINTMENT</th>
+                    <th colspan="2">OFFICE/ENTITY/DIVISION</th>
+                    <th colspan="2">SEPARATION</th>
+                </tr>
+                
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Designation</th>
+                    <th>Status</th>
+                    <th>Salary</th>
+                    <th>Station/Place of Assignment</th>
+                    <th>Branch</th>
+                    <th>LWOP</th>
+                    <th>Cause</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                let totalYears = 0;
+                let totalMonths = 0;
+                let totalDays = 0;
+
+                data.records.forEach(record => {
+                    const startDate = new Date(record.start);
+                    const endDate = new Date(record.end);
+
+                    let years = endDate.getFullYear() - startDate.getFullYear();
+                    let months = endDate.getMonth() - startDate.getMonth();
+                    let days = endDate.getDate() - startDate.getDate();
+
+                    if (days < 0) {
+                    months--;
+                    days += new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
+                    }
+                    if (months < 0) {
+                    years--;
+                    months += 12;
+                    }
+
+                    totalYears += years;
+                    totalMonths += months;
+                    totalDays += days;
+
+                    const output = `${years} year(s), ${months} month(s), ${days} day(s)`;
+                %>
+                <tr>
+                    <td><%= new Date(record.start).toLocaleDateString() %></td>
+                    <td><%= new Date(record.end).toLocaleDateString() %></td>
+                    <td><%= record.position %></td>
+                    <td><%= record.type %></td>
+                    <td><%= Number(record.salary).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) %></td>
+                    <td><%= record.station %></td>
+                    <td><%= record.branch %></td>
+                    <td>None</td>
+                    <td>None</td>
+                </tr>
+               <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Footer Section -->
+        <div class="footer">
+             <p align="left" style="text-indent: 50px;"><b>Issued in compliance with Executive Order No. 54 dated August 10, 1954 and in accordance with Circular No. 58 dated <br>August 10, 1954 of the system.</b></p>
+        </div>
+
+        <!-- Certification Section -->
+        <div class="certified">
+            
+            <center><strong style="text-indent: 50px;">CERTIFIED CORRECT:</strong></center>
+            <br>
+            <p style="text-indent: 400px;">ANNABELLE MADRIGAL</p>
+            <p style="text-indent: 400px;">Administrative Officer IV (HRMO II)</p>
+            
+        </div>
+            <p id="current-date"></p>
+</body>
+<script>
+    // JavaScript to display the current date
+    document.getElementById("current-date").textContent = "Date: " + new Date().toLocaleDateString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric'
+    });
+</script>
+</html>

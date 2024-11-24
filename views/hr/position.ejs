@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+  <div class="alert alert-success">
+    <%= successMessage %>
+  </div>
+<% } %>
+
+<% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+  <div class="alert alert-danger">
+    <%= errorMessage %>
+  </div>
+<% } %>
+
+    <form action="/add-position" method="post">
+      <input type="text" name="position" />
+      <input type="submit" />
+    </form>
+  </body>
+</html>

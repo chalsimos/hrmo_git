@@ -1,0 +1,133 @@
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>Service Record</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">Service Record</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card card-primary">
+                        <div class="card-header">
+                          <h3 class="card-title uppercase">
+                            Employee No: <%= data.name.empno %><br>
+                            Name: <%= data.name.lname + ', ' + data.name.fname + ' ' + data.name.mname.charAt(0) %>. <br>
+                            Rank: <%
+                                let rec = '', sl = '';
+                                if (data.records.length > 0) {
+                                    rec = data.records[data.records.length - 1].position;
+                                    sl = data.records[data.records.length - 1].salary;
+                                }
+                            %>
+                            <%= rec %> <br>
+                            Salary: <%=  Number(sl).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) %>
+                          </h3>
+                        </div>
+
+                        <div class="card-body">
+                          <table id="faculty" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>Position</th>
+                                <th>Date Started</th>
+                                <th>Date End</th>
+                                <th>Duration</th>
+                                <th>Salary</th>
+                                <th>Type</th>
+                                <th>Leave Days</th>
+                                <th>Leave Dates</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.records.sort((a, b) => new Date(b.start) - new Date(a.start)); %>
+                              <%
+                                let totalYears = 0;
+                                let totalMonths = 0;
+                                let totalDays = 0;
+
+                                data.records.forEach(record => {
+                                  const startDate = new Date(record.start);
+                                  const endDate = new Date(record.end);
+
+                                  let years = endDate.getFullYear() - startDate.getFullYear();
+                                  let months = endDate.getMonth() - startDate.getMonth();
+                                  let days = endDate.getDate() - startDate.getDate();
+
+                                  if (days < 0) {
+                                    months--;
+                                    days += new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
+                                  }
+                                  if (months < 0) {
+                                    years--;
+                                    months += 12;
+                                  }
+
+                                  totalYears += years;
+                                  totalMonths += months;
+                                  totalDays += days;
+
+                                  const output = `${years} year(s), ${months} month(s), ${days} day(s)`;
+                              %>
+                                <tr>
+                                  <td><%= record.position %></td>
+                                  <td><%= new Date(record.start).toLocaleDateString() %></td>
+                                  <td><%= new Date(record.end).toLocaleDateString() %></td>
+                                  <td><%= output %></td>
+                                  <td><%= Number(record.salary).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) %></td>
+                                  <td><%= record.type %></td>
+
+                                  <!-- Display total leave days and leave dates -->
+                                  <td><%= record.totalLeaveDays %> days</td>
+                                  <td>
+                                    <% record.leaves.forEach(leave => { %>
+                                      <%= new Date(leave.from).toLocaleDateString() %> 
+                                      - <%= new Date(leave.to).toLocaleDateString() %><br>
+                                    <% }) %>
+                                  </td>
+                                </tr>
+                              <% }); %>
+
+                              <!-- Summing total duration of service -->
+                              <% if (totalDays >= 30) {
+                                  totalMonths += Math.floor(totalDays / 30);
+                                  totalDays = totalDays % 30;
+                                }
+                                if (totalMonths >= 12) {
+                                  totalYears += Math.floor(totalMonths / 12);
+                                  totalMonths = totalMonths % 12;
+                                }
+                              %>
+                            </tbody>
+                          </table>
+
+                          <!-- Display total service duration -->
+                          <p>Total Duration in Service: <%= `${totalYears} year(s), ${totalMonths} month(s), ${totalDays} day(s)` %></p>
+
+                          <a href="/service-record-print/<%= data.name.empno %>" class="btn btn-success" target="_blank">Download PDF</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+        </div>
+    </div>
+</body>
+<%- include('../partials/end') %>

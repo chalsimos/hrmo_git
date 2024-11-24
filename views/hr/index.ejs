@@ -1,0 +1,642 @@
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>List of Employees</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">employee</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+              </section>
+      
+             <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                        <div class="alert alert-success">
+                          <%= successMessage %>
+                        </div>
+                      <% } %>
+
+                      <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                        <div class="alert alert-danger">
+                          <%= errorMessage %>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">COS</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                          <table id="faculty" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.cos.forEach(employee => { %>
+                                <tr>
+                                  <td><a href="/modify-information/<%= employee.empno %>"><%= employee.empno %></a></td>
+                                  <td>
+                                    <a href="/service-record/<%= employee.empno %>">
+                                      <%= employee.lname %>, <%= employee.fname %>
+                                    </a>
+                                  </td>
+                                  <td><%= employee.dept %></td>
+                                  <td>
+                                 <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                      <!-- <a class="dropdown-item" href="#">Link 1</a> -->
+                                      <div class="dropdown-item">  <input 
+                                      type="checkbox" 
+                                      name="status" 
+                                      class="status" 
+                                      data-name="<%= employee.fname + ' ' + employee.lname %>"
+                                      data-id="<%= employee.sid %>"
+                                      value="<%= employee.status %>" 
+                                      <%= employee.status === 'active' ? 'checked' : '' %> 
+                                    > Status</div>
+                                      <a class="dropdown-item export-btn" href="#"data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>"> Modify AT <%= employee.fname + ' ' + employee.lname %></a>
+                                      <div class="dropdown-divider"></div>
+                                      <a class="dropdown-item export-srvrcd" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Service Record</a>
+                                      <a class="dropdown-item leave" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Leave</a>
+                                    </div>
+                                  </div>
+                                  
+                      
+                                  </td>
+                                </tr>
+                              <% }); %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+                          
+                          
+              
+                          <!-- Add Book Dialog Modal -->
+
+                          <div class="modal fade" id="modify" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                  <h2 id="modal-title"></h2>
+                                  <form id="myForm" method="get" action='/filteryear'>
+                                    <input type="hidden" class="form-control" name="empno" id="employeeIdInput" readonly>
+                                    <p><b>Name: <span id="nameText"></span></b></p>
+                                    <div class="row">
+                                      
+                                      <div class="col-lg-6">
+                                        
+                                        <label>Year</label>
+                                        <select class="form-control" name="year">
+                                          <% for (let curyear = new Date().getFullYear(), baseYear = 2019; curyear >= baseYear; curyear--) { %>
+                                            <option value="<%= curyear %>"><%= curyear %></option>
+                                          <% } %>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-6">
+                                        <label for="month">month</label>
+                                        <select name="month" class="form-control">
+                                          <% 
+                                              const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                              for (let i = 0; i < months.length; i++) { 
+                                          %>
+                                              <option value="<%= i + 1 %>"><%= months[i] %></option>
+                                          <% } %>
+                                      </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">Filter</button>
+                                </div>
+                              </div>
+                            </form>
+                            </div>
+                          </div>
+                          <!-- end of modify -->
+
+
+                          <!-- leave start here -->
+                           <div class="modal fade" id="leave" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                  <h2 id="modal-title"></h2>
+                                  <form id="myForm" method="post" action='/file-leave'>
+                                    <input type="hidden" class="form-control" name="empno" id="leaveInput" readonly>
+                                    <h1>Leave Filing</h1>
+                                    <p><b>Name: <span id="leaveText"></span></b></p>
+                                    <input type="hidden" id="leaveName" name="name">
+                                    
+                                    <div class="row">
+                                      <div class="col-lg-6">
+                                        <label for="from">from</label>
+                                        <input type="date" name="from" class="form-control">
+                                      </div>
+                                      <div class="col-lg-6">
+                                        <label for="to">to</label>
+                                        <input type="date" name="to" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-md-5">
+                                        <label for="Reason">Reason</label>
+                                        <select name="reason" class="form-control">
+                                          <option value="sick leave">Sick Leave</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-md-7">
+                                        <label for="others">others</label>
+                                        <textarea name="others" class="form-control"></textarea>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">Filter</button>
+                                </div>
+                              </div>
+                            </form>
+                            </div>
+                          </div>
+
+                          <!-- end of leave -->
+
+                          <div class="modal fade" id="srvrcd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                  <h2 id="modal-title"></h2>
+                                  <form id="myForm" method="post" action='/add-service-record'>
+                                    
+                                    <input type="text" class="form-control" name="empno" id="eid" readonly>
+                                    <p><b>Name: <span id="namesrv"></span></b></p>
+                                    <input type="hidden" name="empname" id="srvname">
+                                    <!-- <input type="text" name="empno" id="emp"> -->
+                                     <a id="viewServiceLink" href="/service-record/here?">View Service Record</a>
+                                    <div class="row">
+                                      <div class="col-lg-6">
+                                        <label for="started">Date started:</label>
+                                        <input type="date" class="form-control" name="start" required>
+                                      </div>
+                                      <div class="col-lg-6">
+                                        <label for="end">Date ended:</label>
+                                        <input type="date" class="form-control" name="end" required>
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-md-6">
+                                        <label for="type">Service type</label>
+                                        <select name="type" id="type" class="form-control">
+                                          <option value="JO">JO</option>
+                                          <option value="COS">COS</option>
+                                          <option value="PERMANENT">PERMANENT</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="position">Position</label>
+                                        <select name="position" class="form-control" id="position">
+                                          <% data.position.forEach(position => { %>
+                                            <option value="<%= position.name %>"><%= position.name %></option>
+                                          <% }) %>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-md-4">
+                                        <label for="">Salary Grade</label>
+                                        <select name="salaryGrade" id="" class="form-control">
+                                          <option value="NA">N/A</option>
+                                          <% for(let i= 9; i<=25; i++) { %> 
+                                          <option value="<%= i%>"><%= i%></option>
+                                          <%} %>
+                                        </select>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <label for="">Tranch</label>
+                                        <select name="tranch" id="" class="form-control">
+                                          <option value="NA">N/A</option>
+                                          <% for(let i= 1; i<=6; i++) { %> 
+                                          <option value="<%= i%>"><%= i%></option>
+                                          <%} %>
+                                        </select>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <label for="">Amount</label>
+                                        <input type="number" class="form-control" name="salary" placeholder="25,000.00">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-md-6">
+                                        <label for="station">Station</label>
+                                        <input type="text" name="station" class="form-control" placeholder="Station">
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="branch">branch</label>
+                                        <select name="branch" class="form-control">
+                                          <option value="national">National</option>
+                                          <option value="Private">Private</option>
+                                          <option value="LGU">LGU</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">Add Service Record</button>
+                                </div>
+                              </div>
+                            </form>
+                            </div>
+                          </div>
+              
+                          <!-- Modal 2 (Modify Employee Modal) -->
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                        <!-- /.card-body -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <!-- ADMIN -->
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">PERMANENT</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                          <table id="admin" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.permanent.forEach(employee => { %>
+                                <tr>
+                                  <td><%= employee.empno %></td>
+                                  <td>
+                                    <a href="/assesment/<%= employee.empno %>">
+                                      <%= employee.lname %>, <%= employee.fname %>
+                                    </a>
+                                  </td>
+                                  <td><%= employee.dept %></td>
+                                  <td>
+                                 <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                      <!-- <a class="dropdown-item" href="#">Link 1</a> -->
+                                      <div class="dropdown-item">  <input 
+                                      type="checkbox" 
+                                      name="status" 
+                                      class="status" 
+                                      data-name="<%= employee.fname + ' ' + employee.lname %>"
+                                      data-id="<%= employee.sid %>"
+                                      value="<%= employee.status %>" 
+                                      <%= employee.status === 'active' ? 'checked' : '' %> 
+                                    > Status</div>
+                                      <a class="dropdown-item export-btn" href="#"data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>"> Modify AT <%= employee.fname + ' ' + employee.lname %></a>
+                                      <div class="dropdown-divider"></div>
+                                      <a class="dropdown-item export-srvrcd" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Service Record</a>
+                                      <a class="dropdown-item leave" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Leave</a>
+                                    </div>
+                                  </div>
+                                  </td>
+                                </tr>
+                              <% }); %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+              
+                          
+              
+                          <!-- Modal 2 (Modify Employee Modal) -->
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                        <!-- /.card-body -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <!-- NON-PERMANENT -->
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">JOB ORDER</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                          <table id="np" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.jobOrder.forEach(employee => { %>
+                                <tr>
+                                  <td><%= employee.empno %></td>
+                                  <td>
+                                    <a href="/assesment/<%= employee.empno %>">
+                                      <%= employee.lname %>, <%= employee.fname %>
+                                    </a>
+                                  </td>
+                                  <td><%= employee.dept %></td>
+                                  <td>
+                                 <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                      <!-- <a class="dropdown-item" href="#">Link 1</a> -->
+                                      <div class="dropdown-item">  <input 
+                                      type="checkbox" 
+                                      name="status" 
+                                      class="status" 
+                                      data-name="<%= employee.fname + ' ' + employee.lname %>"
+                                      data-id="<%= employee.sid %>"
+                                      value="<%= employee.status %>" 
+                                      <%= employee.status === 'active' ? 'checked' : '' %> 
+                                    > Status</div>
+                                      <a class="dropdown-item export-btn" href="#"data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>"> Modify AT <%= employee.fname + ' ' + employee.lname %></a>
+                                      <div class="dropdown-divider"></div>
+                                      <a class="dropdown-item export-srvrcd" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Service Record</a>
+                                      <a class="dropdown-item leave" href="#"  data-id="<%= employee.empno %>" data-names="<%= employee.fname + ' ' + employee.lname %>">Leave</a>
+                                    </div>
+                                  </div>
+                                  </td>
+                                </tr>
+                              <% }); %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+              
+                          <!-- Add Book Dialog Modal -->
+                         
+              
+                          <!-- Modal 2 (Modify Employee Modal) -->
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                        <!-- /.card-body -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <!-- JOB ORDER -->
+               
+              
+          </div>
+        </div>
+        <script>
+          function formatNumber(input) {
+  // Remove any non-numeric characters and commas
+  const value = input.value.replace(/[^0-9]/g, '');
+
+  // Format the number with commas
+  const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  // Update the input field with the formatted value
+  input.value = formattedValue;
+}
+        </script>
+<%- include('../partials/end') %>

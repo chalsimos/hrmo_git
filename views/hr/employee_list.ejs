@@ -1,0 +1,177 @@
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('../partials/nav') %>
+        <%- include('../partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>Employee</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">employee</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+              </section>
+      
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Employee Listings</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                          <table id="example1" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% employees.forEach(employee => { %>
+                                <tr>
+                                  <td><%= employee.empno %></td>
+                                  <td>
+                                    <a href="#" onclick="openModal('modal2', '<%= employee.fname %>', '<%= employee.lname %>', '<%= employee.sid %>', '<%= employee.mname %>')">
+                                      <%= employee.lname %>, <%= employee.fname %>
+                                    </a>
+                                  </td>
+                                  <td><%= employee.dept %></td>
+                                  <td>
+                                    <input 
+                                      type="checkbox" 
+                                      name="status" 
+                                      class="status" 
+                                      data-name="<%= employee.fname + ' ' + employee.lname %>"
+                                      data-id="<%= employee.sid %>"
+                                      value="<%= employee.status %>" 
+                                      <%= employee.status === 'active' ? 'checked' : '' %> 
+                                    >
+                                    <a data-toggle="modal" data-id="<%= employee.sid %>" data-target="#addBookDialog" class="pritil">export</a>
+                                  </td>
+                                </tr>
+                              <% }); %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <th>EMP ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+              
+                          <!-- Add Book Dialog Modal -->
+                          <div id="addBookDialog" class="modal fade" role="dialog">
+                            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                  <h2 id="modal-title"></h2>
+                                  <form id="myForm" method="post" action='/filteryear'>
+                                    <input type="hidden" name="sid" id="ssid">
+                                    <div class="row">
+                                      <div class="col-lg-12">
+                                        <label>Year</label>
+                                        <select class="form-control" name="year">
+                                          <% for (let curyear = new Date().getFullYear(), baseYear = 2019; curyear >= baseYear; curyear--) { %>
+                                            <option value="<%= curyear %>"><%= curyear %></option>
+                                          <% } %>
+                                        </select>
+                                        <input type="checkbox" name="computation">include computation
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">Filter</button>
+                                </div>
+                              </div>
+                            </form>
+                            </div>
+                          </div>
+              
+                          <!-- Modal 2 (Modify Employee Modal) -->
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                        <!-- /.card-body -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              
+          </div>
+        </div>
+        <%- include('../partials/end') %>
