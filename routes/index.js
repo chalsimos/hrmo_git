@@ -14,6 +14,7 @@ router.post("/modify-employee/:id", roleAuth(['admin', 'hr']), bookController.mo
 
 router.get('/find-employee', bookController.findEmployee);
 router.post('/save-endcoded', bookController.saveEncoded);
+router.get('/locator-validator', bookController.locatorValidator);
 router.get("/add-employee", roleAuth(['admin', 'hr']),  bookController.addEmployee);
 router.post("/addemployee", roleAuth(['admin', 'hr']),  bookController.add_employee);
 router.get("/salary", roleAuth(['admin', 'hr']),  bookController.salary);

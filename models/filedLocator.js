@@ -7,5 +7,6 @@ const filedLocatorSchema = new mongoose.Schema({
    purpose: String,
    departure: String,
    arrival: String,
-});
+   status:String,
+},{ timestamps: true });
 module.exports = mongoose.model("filedlocator", filedLocatorSchema);

@@ -76,7 +76,7 @@ for (let year = 2019; year <= currentYear; year++) {
 const bookers = {
   saveEncoded: async(req, res) =>{
     const { locatorNo, empname, empno, location, purpose, departure, arrival } = req.body;
-    const newLocator = new filedLocator({ locatorNo, empname, empno, location, purpose, departure, arrival });
+    const newLocator = new filedLocator({ locatorNo, empname, empno, location, purpose, departure, arrival, status: 'incomplete' });
     try {
       await newLocator.save();
       req.flash("success", "success on filing locator");
@@ -108,6 +108,73 @@ const bookers = {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch employees' });
+  }
+},
+locatorValidator: async(req, res) =>{
+  try {
+    const employeesCollection = collection(db, "locator");
+    const employeesSnapshot = await getDocs(employeesCollection);
+    const firebaseEmployeeData = employeesSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        text: data.text, 
+        locatorID: data.locatorID,  
+        locationName: data.locationName,
+        dateTime: data.dateTime.toDate(), 
+      };
+    });
+    const mongoRecords = await filedLocator.find();
+    const mongoRecordLookup = mongoRecords.reduce((acc, record) => {
+      acc[record.locatorNo] = record;
+      return acc;
+    }, {});
+    const matchedEmployees = await Promise.all(
+      firebaseEmployeeData.map(async (firestoreEmp) => {
+        
+        const mongoEmp = mongoRecordLookup[firestoreEmp.locatorID];
+
+        if (mongoEmp) {
+          
+          await filedLocator.updateOne(
+            { _id: mongoEmp._id },  
+            { $set: { status: 'completed' } }  
+          );
+
+          
+          return {
+            empno: mongoEmp.empno,
+            empName: mongoEmp.fname + " " + mongoEmp.lname,
+            locatorID: firestoreEmp.locatorID,
+            campus: mongoEmp.campus,
+            locationName: firestoreEmp.locationName,
+            dateTime: firestoreEmp.dateTime.toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: true,
+            }), 
+          };
+        }
+
+        return null; 
+      })
+    );
+
+    
+    const filteredMatchedEmployees = matchedEmployees.filter(Boolean);
+
+    
+    // res.json({
+    //   message: "Locator status updated successfully",
+    //   matchedEmployees: filteredMatchedEmployees,
+    // });
+    req.flash("success", "success on validating queries from firebase -> migration to mongodb");
+    res.redirect('/locator');
+  } catch (error) {
+    
   }
 },
   modify_employee: async (req, res) => {
@@ -236,6 +303,10 @@ const bookers = {
  locator: async (req, res) => {
   const user = req.session.user || null;
   const campus = req.session.campus || null;
+  const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
   const months = [
     "January",
     "February",
@@ -261,7 +332,7 @@ const bookers = {
         text: data.text,
         locatorID: data.locatorID,
         locationName: data.locationName,
-        dateTime: data.dateTime.toDate(), // Convert Firebase Timestamp to JavaScript Date
+        dateTime: data.dateTime.toDate(), 
       };
     });
 
@@ -287,19 +358,30 @@ const bookers = {
                 minute: "2-digit",
                 second: "2-digit",
                 hour12: true,
-              }), // Format the date
+              }), 
             }
           : null;
       })
       .filter(Boolean);
-      const empl = await filedLocator.find();
+      const stats = 'incomplete';
+      const empl = await filedLocator.find({
+        createdAt: {
+          $gte: startOfDay,  
+          $lt: endOfDay      
+        },
+      status: stats
+
+      });
+      const completed = await filedLocator.find({ status: 'completed' });
+      
     res.render("hr/locator", {
       months,
       years,
       user,
       campus,
       matchedEmployees,
-      empl
+      empl,
+      completed
     });
   } catch (error) {
     console.error("Error fetching records:", error);
@@ -548,22 +630,22 @@ const bookers = {
     const user = req.session.user || null;
     res.render("hr/index", { data, months, years, user });
   },
-// if(ftype ==='PERMANENT'){
 
-//   }
-//   if(ftype ==='COS'){
 
-//   }
-//   if(ftype ==='JO'){
 
-//   }
+
+
+
+
+
+
   export: async (req, res) => {
   const { emptype, month, year, mdeduct } = req.body;
 
   try {
     const employees = await employee.find();
 
-    // Fetch all service records and map the latest record for each employee
+    
     const allServiceRecords = await srecord.find().sort({ end: -1 });
     const serviceRecordMap = new Map();
 
@@ -575,10 +657,10 @@ const bookers = {
 
     const employeesWithSalaries = await Promise.all(
       employees.map(async (emp) => {
-        // Assign salary from serviceRecordMap
+        
         emp.amount = serviceRecordMap.get(emp.empno) || 0;
 
-        // Add deductions if `mdeduct` is true
+        
         if (mdeduct) {
           const deductions = await deduct.find({ empno: emp.empno });
           emp.deductions = deductions.map((deduction) => ({
@@ -591,7 +673,7 @@ const bookers = {
       })
     );
 
-    // Insert payroll records if `mdeduct` is true
+    
     if (mdeduct) {
       const payrollRecords = employeesWithSalaries.map((emp) => {
         const totalDeductions = emp.deductions

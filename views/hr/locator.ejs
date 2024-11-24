@@ -42,6 +42,21 @@
               <div class="container-fluid">
                 <div class="row">
                   <div class="col-12">
+                    <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                      <div class="alert alert-success">
+                        <%= successMessage %>
+                      </div>
+                    <% } %>
+
+                    <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                      <div class="alert alert-danger">
+                        <%= errorMessage %>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12">
                     <div class="card">
                       <div class="card-header">
                         <h3 class="card-title">
@@ -50,13 +65,15 @@
                       </div>
                       <div class="card-body">
                           <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#encodeLocator">Encode</button>
-                          
+                          <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#generateLocator">Generate</button>
+                          <a href="/locator-validator">Run Locator Migration</a>
                           <table id="faculty" class="table table-bordered table-striped">
                             <tr>
                               <th>Locator ID</th>
                               <th>Employee</th>
                               <th>Departure/Arrival</th>
                               <th>Location/Purpose</th>
+                              <th>Date Filed</th>
                             </tr>
                             <tbody>
                               <% empl.forEach(e =>{ %>
@@ -70,6 +87,7 @@
                                     <li><%= e.purpose %></li>
                                   </ul>
                                    </td>
+                                   <td><%= e.createdAt %></td>
                               </tr>
                               <% }) %>
                             </tbody>
@@ -79,6 +97,7 @@
                               <th>Employee</th>
                               <th>Departure/Arrival</th>
                               <th>Location/Purpose</th>
+                              <th>Date Filed</th>
                               </tr>
                             </tfoot>
                           </table>
@@ -87,22 +106,49 @@
                   </div>
                 </div>
               </div>
-                <div class="container-fluid">
+                <div class="container-fluid">  
                   <div class="row">
                     <div class="col-12">
-                      <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
-                        <div class="alert alert-success">
-                          <%= successMessage %>
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Submitted Locator</h3>
                         </div>
-                      <% } %>
+                        <div class="card-body">
+                      <% if (matchedEmployees && matchedEmployees.length > 0) { %>
+                          <table class="table table-striped">
+                              <thead>
+                                  <tr>
+                                    <th>Locator ID</th>
+                                      <th>Employee ID</th>
+                                      <th>Name</th>
+                                      <th>Campus</th> 
+                                      <th>Location Name</th>
+                                      <th>Arrival</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <% matchedEmployees.forEach(employee => { %>
+                                      <tr>
+                                        <td><%= employee.locatorID %></td>
+                                          <td><%= employee.empno %></td>
+                                          <td><%= employee.empName %></td>
+                                          <td><%= employee.campus %></td>
+                                          <td><%= employee.locationName %></td> 
+                                          <td><%= employee.dateTime%></td>
 
-                      <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
-                        <div class="alert alert-danger">
-                          <%= errorMessage %>
-                        </div>
+                                      </tr>
+                                  <% }); %>
+                              </tbody>
+                          </table>
+                      <% } else { %>
+                          <p>No matched employees found.</p>
                       <% } %>
+                        </div>
+                        </div>
                     </div>
-                  </div>
+                </div>
+
+                <div class="container-fluid">  
                   <div class="row">
                     <div class="col-12">
                       <div class="card">
@@ -110,37 +156,37 @@
                           <h3 class="card-title">Completed Locator</h3>
                         </div>
                         <div class="card-body">
-                        <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#generateLocator">Generate</button>
-                          
-        <% if (matchedEmployees && matchedEmployees.length > 0) { %>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                      <th>Locator ID</th>
-                        <th>Employee ID</th>
-                        <th>Name</th>
-                        <th>Campus</th> 
-                        <th>Location Name</th>
-                        <th>Arrival</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% matchedEmployees.forEach(employee => { %>
-                        <tr>
-                          <td><%= employee.locatorID %></td>
-                            <td><%= employee.empno %></td>
-                            <td><%= employee.empName %></td>
-                            <td><%= employee.campus %></td>
-                            <td><%= employee.locationName %></td> 
-                            <td><%= employee.dateTime%></td>
-
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        <% } else { %>
-            <p>No matched employees found.</p>
-        <% } %>
+                      <% if (matchedEmployees && matchedEmployees.length > 0) { %>
+                          <table class="table table-striped">
+                              <thead>
+                                  <tr>
+                                    <th>Locator ID</th>
+                              <th>Employee</th>
+                              <th>Departure/Arrival</th>
+                              <th>Location/Purpose</th>
+                              <th>Date Filed</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                   <% empl.forEach(e =>{ %>
+                              <tr>
+                                <td><%= e.locatorNo %></td>
+                                <td><%= e.empname %></td>
+                                <td><%= e.departure %> - <%= e.arrival %></td>
+                                <td>
+                                  <ul>
+                                    <li><%= e.location %></li>
+                                    <li><%= e.purpose %></li>
+                                  </ul>
+                                   </td>
+                                   <td><%= e.createdAt %></td>
+                              </tr>
+                              <% }) %>
+                              </tbody>
+                          </table>
+                      <% } else { %>
+                          <p>No matched employees found.</p>
+                      <% } %>
                         </div>
                         </div>
                     </div>
