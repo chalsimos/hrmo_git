@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  .container {
+    width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+  }
+  
+  .title {
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .section {
+    margin-bottom: 20px;
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .column {
+    width: 30%;
+  }

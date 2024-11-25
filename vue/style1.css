@@ -1,0 +1,82 @@
+ body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .payslip {
+            width: 4.25in; /* 1/4 of 8.5 inches */
+            height: 6.5in; /* 1/4 of 13 inches */
+            padding: 8px; /* Reduced padding */
+            border: 1px solid #000;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 40px; /* Reduced logo size */
+            height: 40px;
+            margin-right: 8px; /* Reduced margin */
+        }
+
+        .university-details {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 12px; /* Reduced font size */
+            margin: 0;
+        }
+
+        p {
+            margin: 1px 0; /* Reduced margin for paragraphs */
+            font-size: 10px; /* Reduced font size */
+            line-height: 1.2; /* Reduced line height */
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 14px; /* Reduced font size */
+            margin: 8px 0;
+        }
+
+        h6 {
+            text-align: center;
+            font-size: 10px; /* Reduced font size */
+            margin: 4px 0;
+        }
+
+        .employee-details, .compensations, .earnings, .deductions, .net-pay, .approval {
+            margin: 3px 0; /* Reduced section spacing */
+        }
+
+        .earnings, .net-pay {
+            font-weight: bold;
+        }
+
+        .deductions {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 5px 0; /* Reduced padding */
+        }
+
+        .deductions p {
+            margin: 2px 0; /* Reduced spacing within deductions */
+        }
+
+        .approval {
+            text-align: center;
+            font-size: 10px; /* Reduced font size */
+        }
+
+        .approval p {
+            margin: 1px 0;
+        }
+
+        .loan-details {
+            margin-left: 0; /* No indentation */
+        }
