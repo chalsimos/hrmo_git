@@ -472,7 +472,7 @@ locatorValidator: async(req, res) =>{
       branch,
       type,
     });
-    console.log(empno);
+    
 
     await newService.save();
     res.redirect("/main");
@@ -793,7 +793,6 @@ locatorValidator: async(req, res) =>{
             "Employee ID already exists. Please use a different Employee ID."
           );
       } else {
-        console.log(err);
         res.status(500).send("An error occurred while adding the employee.". err);
       }
     }

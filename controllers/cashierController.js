@@ -78,18 +78,18 @@ const cashier = {
     const data = {
       records: await Payroll.findOne({employeeId: id})
     };
-    console.log(data);
+    
     
     
   },  
   addPayroll: async (req, res) => {
    try {
-    console.log('Request Body:', req.body);  
+    
     const { employeeId, name, basicSalary, allowances, deductions, payPeriod } = req.body;
     if (!employeeId || !basicSalary || !payPeriod || !payPeriod.year || !payPeriod.month) {
       return res.status(400).json({ message: "Missing required fields." });
     }
-    console.log(employeeId);
+    
     const totalDeductions = (
       (deductions.sss || 0) +
       (deductions.philhealth || 0) +
@@ -178,7 +178,7 @@ const cashier = {
   },
   index: async(req, res)=>{
       res.render('cashier/index', { months, years });        
-      console.log('hello cashier');
+      
         
   }   
 };

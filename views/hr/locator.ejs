@@ -27,7 +27,7 @@
                 <div class="container-fluid">
                   <div class="row mb-2">
                     <div class="col-sm-6">
-                      <h1>List of Employees</h1>
+                      <h1>Locator</h1>
                     </div>
                     <div class="col-sm-6">
                       <ol class="breadcrumb float-sm-right">
@@ -63,10 +63,13 @@
                           Filed Locator
                         </h3>
                       </div>
+                      
                       <div class="card-body">
-                          <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#encodeLocator">Encode</button>
-                          <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#generateLocator">Generate</button>
-                          <a href="/locator-validator">Run Locator Migration</a>
+                        <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#encodeLocator">Encode</button>
+                        <button class="btn btn-success" data-toggle="modal" class="nav-link" data-target="#generateLocator">Generate</button>
+                        <a href="/locator-validator">Run Locator Migration</a>
+                              
+                          <% if(empl.length > 0){ %>
                           <table id="faculty" class="table table-bordered table-striped">
                             <tr>
                               <th>Locator ID</th>
@@ -101,6 +104,9 @@
                               </tr>
                             </tfoot>
                           </table>
+                          <% }else{ %>
+                            <p>No matched employees found.</p>
+                          <% } %>
                       </div>
                     </div>
                   </div>
@@ -156,7 +162,7 @@
                           <h3 class="card-title">Completed Locator</h3>
                         </div>
                         <div class="card-body">
-                      <% if (matchedEmployees && matchedEmployees.length > 0) { %>
+                      <% if (completed.length > 0) { %>
                           <table class="table table-striped">
                               <thead>
                                   <tr>
@@ -168,7 +174,7 @@
                                   </tr>
                               </thead>
                               <tbody>
-                                   <% empl.forEach(e =>{ %>
+                                   <% completed.forEach(e =>{ %>
                               <tr>
                                 <td><%= e.locatorNo %></td>
                                 <td><%= e.empname %></td>
