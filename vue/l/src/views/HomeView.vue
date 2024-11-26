@@ -33,7 +33,14 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
-                <LogoutButton @logout-success="user = null" />
+                <!-- Logout Action -->
+                <v-btn
+                  color="error"
+                  small
+                  @click="logout"
+                >
+                  Logout
+                </v-btn>
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -115,14 +122,14 @@
 </template>
 
 <script>
+import { signOut } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import LoginButton from "../components/LoginButton.vue";
-import LogoutButton from "../components/LogoutButton.vue";
 
 export default {
-  components: { LoginButton, LogoutButton },
+  components: { LoginButton },
   data() {
     return {
       user: null,
@@ -173,6 +180,18 @@ export default {
         } finally {
           this.loading = false; // Stop the loader
         }
+      }
+    },
+    async logout() {
+      try {
+        await signOut(auth); // Firebase sign-out
+        this.user = null;
+        this.userExists = false; // Reset user and app state
+        this.drawer = false; // Close drawer
+        alert("Logged out successfully!");
+      } catch (error) {
+        console.error("Error logging out:", error);
+        alert("An error occurred during logout.");
       }
     },
   },
