@@ -8,7 +8,7 @@
                 <div class="container-fluid">
                   <div class="row mb-2">
                     <div class="col-sm-6">
-                      <h1>List of Employees</h1>
+                      <h1>Service Devices</h1>
                     </div>
                     <div class="col-sm-6">
                       <ol class="breadcrumb float-sm-right">
@@ -22,6 +22,67 @@
       
              <section class="content">
                 <div class="container-fluid">
+        <!-- start ng devices           -->
+        <div class="row">
+  <% data.devices.forEach(device => { %>
+    <div class="col-lg-3 col-6">
+      <div class="small-box bg-success" data-device-ip="<%= device.ipAddress %>" data-device-name="<%= device.name %>">
+        <div class="inner">
+          <h3>
+            <%= device.ipAddress %>
+            <!-- Pencil icon button -->
+            <button class="btn btn-sm btn-warning edit-ip-btn" title="Edit IP" data-ip="<%= device.ipAddress %>" data-name="<%= device.name %>">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </h3>
+          <p><%= device.name %></p>
+          <p class="status">Checking status...</p>
+        </div>
+        <div class="icon">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        <a href="/attendance/<%= device.ipAddress %>" class="small-box-footer">Get Attendance Data <i class="fas fa-arrow-circle-right"></i></a>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<!-- Modal for updating device info -->
+<div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDeviceModalLabel">Edit Device Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editDeviceForm">
+          <div class="form-group">
+            <label for="deviceIp">Current IP Address</label>
+            <input type="text" class="form-control" id="deviceIp" disabled>
+          </div>
+          <div class="form-group">
+            <label for="newDeviceIp">New IP Address</label>
+            <input type="text" class="form-control" id="newDeviceIp" required>
+          </div>
+          <div class="form-group">
+            <label for="deviceName">Device Name</label>
+            <input type="text" class="form-control" id="deviceName" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<hr>
+        <!-- end ng devices -->
+         <h1>List of Employees</h1>
                   <div class="row">
                     <div class="col-12">
                       <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
@@ -183,6 +244,7 @@
                                         <label for="Reason">Reason</label>
                                         <select name="reason" class="form-control">
                                           <option value="sick leave">Sick Leave</option>
+                                          <option value="educational leave">Educational Leave</option>
                                         </select>
                                       </div>
                                       <div class="col-md-7">
@@ -627,16 +689,88 @@
               
           </div>
         </div>
-        <script>
-          function formatNumber(input) {
-  // Remove any non-numeric characters and commas
-  const value = input.value.replace(/[^0-9]/g, '');
+       <script>
+  $(document).ready(function () {
+    // Function to check the status of a device
+    function checkDeviceStatus(ip, cardElement) {
+      $.ajax({
+        url: "/check-device", // API endpoint to check device status
+        type: "GET",
+        data: { ip: ip },
+        success: function (data) {
+          const status = data.status === "Online" ? "bg-success" : "bg-danger"; // Determine the class based on status
+          const responseTime = data.time ? `Response Time: ${data.time} ms` : "";
 
-  // Format the number with commas
-  const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          // Update the card background color and status text
+          $(cardElement)
+            .removeClass("bg-secondary bg-success bg-danger")
+            .addClass(status)
+            .find(".status")
+            .html(`${data.status} ${responseTime}`);
+        },
+        error: function () {
+          // Handle errors by marking the card as Offline
+          $(cardElement)
+            .removeClass("bg-secondary bg-success")
+            .addClass("bg-danger")
+            .find(".status")
+            .text("Offline (Error)");
+        }
+      });
+    }
 
-  // Update the input field with the formatted value
-  input.value = formattedValue;
-}
-        </script>
+    // Periodically check the status of all devices
+    setInterval(function () {
+      $(".small-box").each(function () {
+        const ip = $(this).data("device-ip"); // Get the IP address from the card's data attribute
+        checkDeviceStatus(ip, this); // Call the function for each device
+      });
+    }, 5000); // Check every 5 seconds
+  });
+  document.addEventListener('click', function (e) {
+  if (e.target.closest('.edit-ip-btn')) {
+    const button = e.target.closest('.edit-ip-btn');
+    const ipAddress = button.getAttribute('data-ip');
+    const deviceName = button.getAttribute('data-name');
+
+    // Populate the modal with the current IP and Name
+    document.getElementById('deviceIp').value = ipAddress;
+    document.getElementById('deviceName').value = deviceName;
+
+    // Show the modal
+    $('#editDeviceModal').modal('show');
+  }
+});
+
+// Example of sending the update request from the client side
+document.getElementById('editDeviceForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const ipAddress = document.getElementById('deviceIp').value;
+    const newIpAddress = document.getElementById('newDeviceIp').value; // New IP input field
+    const deviceName = document.getElementById('deviceName').value;
+
+    fetch('/update-device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ip: ipAddress, newIp: newIpAddress, name: deviceName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ip && data.name) {
+            // Update the UI with the new values
+            const deviceBox = document.querySelector(`div[data-device-ip="${ipAddress}"]`);
+            deviceBox.querySelector('h3').textContent = newIpAddress; // Update IP in UI
+            deviceBox.querySelector('p').textContent = deviceName; // Update name in UI
+            $('#editDeviceModal').modal('hide');
+        } else {
+            alert('Error saving device information');
+        }
+    })
+    .catch(err => alert('Error updating device'));
+});
+
+</script>
 <%- include('../partials/end') %>

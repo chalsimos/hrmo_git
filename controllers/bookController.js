@@ -2,7 +2,7 @@ const firebase = require("firebase/app");
 require("firebase/firestore");
 
 const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, getDocs } = require("firebase/firestore");
+const { getFirestore, collection, getDocs,updateDoc, doc, } = require("firebase/firestore");
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1-QuakN6Q32dWIzkBPzG8SEWhLIltICU",
@@ -26,6 +26,7 @@ const csvParser = require("csv-parser");
 const locatorModel = require("../models/locatorModel");
 const userModel = require("../models/User");
 const payrol = require('../models/PayrolModel');
+const devices = require('../models/devices');
 const flash = require("connect-flash");
 const filedLocator = require('../models/filedLocator');
 const app = initializeApp(firebaseConfig);
@@ -167,10 +168,6 @@ locatorValidator: async(req, res) =>{
     const filteredMatchedEmployees = matchedEmployees.filter(Boolean);
 
     
-    // res.json({
-    //   message: "Locator status updated successfully",
-    //   matchedEmployees: filteredMatchedEmployees,
-    // });
     req.flash("success", "success on validating queries from firebase -> migration to mongodb");
     res.redirect('/locator');
   } catch (error) {
@@ -299,7 +296,59 @@ locatorValidator: async(req, res) =>{
 
     res.render("hr/locatorPrint", { slipsData, data, user, campus });
   },
+  approveLocator: async (req, res) =>{
+      const locatorId = req.params.id; // Get the document ID from the URL
+  try {
+    // Reference the specific document in the "locators" collection
+    const locatorDocRef = doc(db, "locators", locatorId);
 
+    // Update the status field to "approved"
+    await updateDoc(locatorDocRef, {
+      status: "approved",
+    });
+
+    res.send(`Locator with ID ${locatorId} has been successfully approved.`);
+    res.redirect("/olacator");
+  } catch (error) {
+    console.error("Error updating locator status:", error);
+    res.status(500).send("An error occurred while approving the locator.");
+  }
+  },
+olacator: async (req, res) => {
+const user = req.session.user || null;
+  const campus = req.session.campus || null;
+  try {
+    const employeesCollection = collection(db, "locators");
+    const employeesSnapshot = await getDocs(employeesCollection);
+
+    const firebaseEmployeeData = employeesSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id:doc.id,
+        user: data.userName,
+        locatorID: data.locatorID,
+        locationName: data.locationName,
+        departure: data.departureTime,
+        arrival: data.returnTime,
+        purpose: data.reason,
+        dateTime: data.date,
+        status: data.status,
+      };
+    });
+    
+    
+    res.render("hr/olocator", {
+      months,
+      years,
+      user,
+      campus,
+      matchedEmployees: firebaseEmployeeData,
+    });
+  } catch (error) {
+    console.error("Error fetching records:", error);
+    res.status(500).send("Server error");
+  }
+},
  locator: async (req, res) => {
   const user = req.session.user || null;
   const campus = req.session.campus || null;
@@ -621,13 +670,15 @@ locatorValidator: async(req, res) =>{
   },
 
   HrIndex: async (req, res) => {
+    const user = req.session.user || null;
     const data = {
       permanent: await employee.find({ cat_type: "PERMANENT" }),
       cos: await employee.find({ cat_type: "COS" }),
       jobOrder: await employee.find({ cat_type: "JOBORDER" }),
       position: await positionModel.find(),
+      devices: await devices.find({ campus: user.campus})
     };
-    const user = req.session.user || null;
+    
     res.render("hr/index", { data, months, years, user });
   },
 

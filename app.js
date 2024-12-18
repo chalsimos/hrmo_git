@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const ping = require("ping");
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');

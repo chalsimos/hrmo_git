@@ -1,0 +1,120 @@
+<%- include('../partials/top') %>
+<style>
+  #suggestions {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+  }
+  .suggestion-item:hover {
+    background-color: #f0f0f0;
+  }
+</style>
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+    <%- include('../partials/nav') %>
+    <%- include('../partials/aside') %>
+    <div class="content-wrapper">
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Locator</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">employee</li>
+              </ol>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                <div class="alert alert-success">
+                  <%= successMessage %>
+                </div>
+              <% } %>
+
+              <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                <div class="alert alert-danger">
+                  <%= errorMessage %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Filed Locator</h3>
+                </div>
+                <div class="card-body">
+                  <table id="faculty" class="table table-bordered table-striped">
+                    <thead>
+                      <tr>
+                        <th>Employee</th>
+                        <th>Departure/Arrival</th>
+                        <th>Location/Purpose</th>
+                        <th>Date Filed</th>
+                        <th>action</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% matchedEmployees.forEach(employee => { %>
+                        <tr>
+                            <td><%= employee.user %></td>
+                          <td><%= employee.departure %> -<%= employee.arrival %> </td>
+                          <td><%= employee.locationName %>/ <br><%= employee.purpose %></td>
+                          <td>
+                            <% if (employee.dateTime) { %>
+                              <%= employee.dateTime.toLocaleString("en-US", { 
+                                  year: "numeric", 
+                                  month: "long", 
+                                  day: "numeric", 
+                                  hour: "2-digit", 
+                                  minute: "2-digit", 
+                                  second: "2-digit", 
+                                  hour12: true 
+                                }) %>
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </td>
+                          <td><div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                      <a class="dropdown-item export-srvrcd" href="/admin/approve/<%= employee.id %>">Approve</a>
+                                      <a class="dropdown-item leave" href="#">reject</a>
+                                    </div>
+                                  </div></td>
+                          <td><%= employee.status %></td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+<%- include('../partials/end') %>

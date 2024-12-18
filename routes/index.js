@@ -4,7 +4,11 @@ const authController = require('../controllers/authController');
 const { roleAuth } = require('../middleware/authMiddleware');
 const bookController = require("../controllers/bookController");
 const cashierController = require("../controllers/cashierController")
+const generalController = require("../controllers/generalController");
 
+router.get("/check-device", generalController.getDeviceInfo);
+router.post("/update-device", generalController.updateDevice);
+router.get("/attendance/:id", generalController.getAttendance);
 // router.get("/main", roleAuth(['admin', 'hr']), bookController.HrIndex);
 router.get("/main", roleAuth(['admin', 'hr']), bookController.HrIndex);
 router.get("/employees", roleAuth(['admin', 'hr']),  bookController.employees);
@@ -29,6 +33,9 @@ router.post("/update-time", roleAuth(['admin', 'hr']),  bookController.update_ti
 router.post("/file-leave", roleAuth(['admin', 'hr']),  bookController.fileFeave);
 router.get("/leave-report", roleAuth(['admin', 'hr']),  bookController.leaveReport);
 router.get("/locator", roleAuth(['admin', 'hr']),  bookController.locator);
+router.get("/olacator", roleAuth(['admin', 'hr']),  bookController.olacator);
+router.get("/admin/approve/:id", roleAuth(['admin', 'hr']),  bookController.approveLocator);
+
 router.post("/generate-locator", roleAuth(['admin', 'hr']),  bookController.generateLocator);
 router.get("/system-accounts", roleAuth(['admin', 'hr']),  bookController.systemAccounts);
 

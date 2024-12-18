@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">locator</string>
+    <string name="title_activity_main">locator</string>
+    <string name="package_name">com.minsu.locator</string>
+    <string name="custom_url_scheme">com.minsu.locator</string>
+</resources>

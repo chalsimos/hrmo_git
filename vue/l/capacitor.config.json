@@ -1,0 +1,12 @@
+{
+  "appId": "com.minsu.locator",
+  "appName": "locator",
+  "webDir": "dist",
+    "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    }
+  }
+}

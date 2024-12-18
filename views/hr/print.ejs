@@ -1,61 +1,91 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title><%= month %> - <%= year %></title>
-  <style>
-    @media print { #page-footer { display: none; } }
-    @page { size: 8.5in 13in; }
-    body { margin: 0; padding: 0; display: grid; grid-template-columns: 0.5fr 0.5fr; height: auto; }
-    .column { padding: 10px; }
-    table { border-collapse: collapse; border: 1px solid black; table-layout: fixed; width: 100%; }
-    td.dotted { border: 1px dotted black; }
-    .dotted-line { border-style: dotted; border-width: 1px; border-color: #ccc; }
-    hr { border: none; border-top: 1px solid; height: 1px; margin-top: 1px; margin-bottom: 5px; }
-    .fth { width: 30px; }
+   <style>
+  @media print {
+    #page-footer {
+      display: none;
+    }
+  }
+  @page {
+    /* size: 105mm 297.4mm; */
+    size: 8.5in 13in;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 0.5fr 0.5fr;
+    height: auto;
+  }
+  .column{
+    padding: 10px;
+  }
+  table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    table-layout: fixed;
+    width: 100%;
+  }
+  td.dotted{
+    border: 1px dotted black;
+  }
+  .dotted-line {
+    border-style: dotted;
+    border-width: 1px;
+    border-color: #ccc;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid;
+    height: 1px;
+    margin-top: 1px;
+    margin-bottom: 5px;
+  }
+  .fth{
+    width:30px;
+  }
+  .line {
+      border-top: 1px solid black;
+      width: 50%;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
   <% 
-  let totalLateMinutes = 0; 
-  const one = ["01", "03", "05", "07", "08", "10", "12"];
-  const num = one.includes(month) ? 31 : 30;
-  let ctr = 0;
-  const breaker = '<br><br><br><br><br><br><br><br>';
-  
-  employees.forEach((employee, index) => {
-    ctr++;
-    
-    
-    let lateMinutes1to10 = 0;
-    let lateMinutes11to25 = 0;
-    let lateMinutes26to31 = 0;
-  
+    let totalLateMinutes = 0; 
+    const one = ["01", "03", "05", "07", "08", "10", "12"];
+    const num = one.includes(month) ? 31 : 30;
+
+    employees.forEach(employee => {
+      let lateMinutes1to10 = 0;
+      let lateMinutes11to25 = 0;
+      let lateMinutes26to31 = 0;
   %>
     <div class="column">
-      Civil Service Form No. 48 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Card No. <%= employee.empno %>
-      <!-- dito ko hahanapin ang sweldoca -->
+      <p>
+        Civil Service Form No. 48 &emsp;&emsp;Card No. <%= employee.empno %>
+      </p>
       <div style="text-align: center;">
-        <h3 align='center'>DAILY TIME RECORD</h3>
-        <b><%= employee.lname.toUpperCase() %>, <%= employee.fname.toUpperCase() %> <%= employee.mname ? employee.mname[0].toUpperCase() : '' %></b>
+        <h3>DAILY TIME RECORD</h3>
+        <b>
+          <%= employee.lname.toUpperCase() %>, <%= employee.fname.toUpperCase() %>
+          <%= employee.mname ? employee.mname[0].toUpperCase() : '' %>
+        </b>
         <hr>
-        (NAME)
-        <br>
+        <p>(NAME)</p>
         <b><%= employee.area.toUpperCase() %></b>
         <hr>
-        (DIVISION)
-        <br><br>
+        <p>(DIVISION)</p>
       </div>
-  
-      For the month of <u>&emsp;&emsp;&emsp;&emsp;<%= month %> <%= year %>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</u>
-      <br>
-      Official hours for arrival &emsp;&emsp;{Regular days <u>&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;</u>}
-      <br>
-      &emsp;&emsp;&emsp;&emsp;and departure &emsp;&emsp;  {Saturdays <u>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</u>}
-  
-      <br>
-      <br>
-      <table border="1" width="100%">
+      <p>
+        For the month of <u><%= month %> <%= year %></u><br>
+        Official hours for arrival and departure:
+      </p>
+      <table>
         <tr>
           <th rowspan="2" class="fth">Day</th>
           <th colspan="2">A.M.</th>
@@ -63,35 +93,34 @@
           <th colspan="2">Undertime</th>
         </tr>
         <tr>
-          <td><font size="2"> Arrival</font></td>
-          <td><font size="2"> Departure</font></td>
-          <td><font size="2"> Arrival</font></td>
-          <td><font size="2"> Departure</font></td>
-          <td><font size="2"> Hours</font></td>
-          <td><font size="2"> Minutes</font></td>
+          <td>Arrival</td>
+          <td>Departure</td>
+          <td>Arrival</td>
+          <td>Departure</td>
+          <td>Hours</td>
+          <td>Minutes</td>
         </tr>
-  
+
         <% 
-        let employeeTotalLateMinutes = 0; 
+        let employeeTotalLateMinutes = 0;
         for (let i = 1; i <= num; i++) {
-          let date = new Date(year, month - 1, i).toISOString().slice(0, 10); 
+          const date = new Date(year, month - 1, i).toISOString().slice(0, 10); 
           let hasData = false;
           let lateHours = 0;
           let lateMinutes = 0;
-          
-          let dayData = dataset.filter(d => d.date === date && d.sid === employee.empno)[0];
-          if (dayData) {
+
+          const dayData = dataset.find(d => d.date === date && d.sid === employee.empno);
+          if (dayData && dayData.am_time_in) {
             hasData = true;
-            const am_time_in = dayData.am_time_in;
             const scheduledTime = new Date('1970-01-01T08:00:00');
-            const actualTimeIn = new Date('1970-01-01T' + am_time_in);
+            const actualTimeIn = new Date('1970-01-01T' + dayData.am_time_in);
+
             if (actualTimeIn > scheduledTime) {
               const interval = actualTimeIn - scheduledTime;
-              lateHours = Math.floor(interval / 3600000); 
-              lateMinutes = Math.floor((interval % 3600000) / 60000); 
-              employeeTotalLateMinutes += lateMinutes; 
-              
-              
+              lateHours = Math.floor(interval / 3600000);
+              lateMinutes = Math.floor((interval % 3600000) / 60000);
+              employeeTotalLateMinutes += lateMinutes;
+
               if (i >= 1 && i <= 10) {
                 lateMinutes1to10 += lateMinutes;
               } else if (i >= 11 && i <= 25) {
@@ -103,76 +132,43 @@
           }
         %>
           <tr>
-            <td class="dotted">
-              <%= i %>
-            </td>
+            <td class="dotted"><%= i %></td>
             <% if (hasData) { %>
-              <td class="dotted" width="100"><font size='2'><b><%= dayData.am_time_in ? new Date(`1970-01-01T${dayData.am_time_in}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : '0' %></b></font></td>
-              <td class="dotted" width="100"><font size='2'><b><%= dayData.am_time_out ? new Date(`1970-01-01T${dayData.am_time_out}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : '0' %></b></font></td>
-              <td class="dotted" width="100"><font size='2'><b> <%= dayData.pm_time_in && dayData.pm_time_in.match(/^\d{2}:\d{2}(:\d{2})?$/) 
-                ? new Date(`1970-01-01T${dayData.pm_time_in}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
-                : '0' %></b></font></td>
-              <td class="dotted" width="100"><font size='2'><b>  <%= dayData.pm_time_out && dayData.pm_time_out.match(/^\d{2}:\d{2}(:\d{2})?$/) 
-                ? new Date(`1970-01-01T${dayData.pm_time_out}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
-                : '0' %>  </b></font></td>
-              <td class="dotted" width="100"><font size='2'><b><%= lateHours %></b></font></td>
-              <td class="dotted" width="100"><font size='2'><b><%= lateMinutes %></b></font></td>
+              <td class="dotted"><%= dayData.am_time_in || '0' %></td>
+              <td class="dotted"><%= dayData.am_time_out || '0' %></td>
+              <td class="dotted"><%= dayData.pm_time_in || '0' %></td>
+              <td class="dotted"><%= dayData.pm_time_out || '0' %></td>
+              <td class="dotted"><%= lateHours %></td>
+              <td class="dotted"><%= lateMinutes %></td>
             <% } else { %>
-              <td class="dotted" width="100"></td>
-              <td class="dotted" width="100"></td>
-              <td class="dotted" width="100"></td>
-              <td class="dotted" width="100"></td>
-              <td class="dotted" width="100"></td>
-              <td class="dotted" width="100"></td>
+              <td class="dotted"></td>
+              <td class="dotted"></td>
+              <td class="dotted"></td>
+              <td class="dotted"></td>
+              <td class="dotted"></td>
+              <td class="dotted"></td>
             <% } %>
           </tr>
         <% } %>
-        <% totalLateMinutes += employeeTotalLateMinutes;  %>
-  
-        <tr>
-          <td colspan="7">
-            <b>Deductions :</b>
-             
-            1-10: 
-            <%
-            const dRate = employee.amount / 22; 
-            const deductions1to10 = (dRate / 8 / 60) * lateMinutes1to10; 
-            console.log("Daily Rate:", dRate);
-            console.log("Deduction for 1-10 minutes of lateness:", deductions1to10);
-            console.log("late minutes: ", lateMinutes1to10);
-            %>
-
-            <b> <%= lateMinutes1to10 + 'min ₱ '+ Number(deductions1to10).toFixed(2) %></b>
-            
-            11-25: 
-            <% 
-              const deductions11to25 = (dRate / 8 / 60) * lateMinutes11to25;
-              
-            %>
-            <b> <%= lateMinutes11to25 + 'min ₱ '+ Number(deductions11to25).toFixed(2) %></b>
-            
-            26-31: 
-            <% 
-              const deductions26to31 = (dRate / 8 / 60) * lateMinutes26to31;
-            %>
-            <b> <%= lateMinutes26to31 + 'min ₱ '+ Number(deductions26to31).toFixed(2) %></b>
-          </td>
-        </tr>
+        <% totalLateMinutes += employeeTotalLateMinutes; %>
+        
       </table>
-      I certify on my honor that the above is a true and correct report <br>of the
-      hours of work performed, record of which was made daily <br>at the time
-      of arrival and departure from office.
-      <br><br><br>
-      <u>______________________________________________</u><br>
-      <left>(Employee's Signature)</left>
-      <br><br>
-      Verified as to the prescribed office hours:<br><br><br><br><br>
-      <u>______________________________________________</u><br>
-      <center><%= signatory.name.toUpperCase() %> </center>
-      <center><%= signatory.position.toUpperCase() %> </center><br>
-      <!-- (In Charge) -->
+      <p>
+        I certify on my honor that the above is a true and correct report of the hours of work performed, recorded daily.
+      </p>
+      <p>
+        <u>______________________________________________</u><br>
+        (Employee's Signature)
+      </p>
+      <p>
+        Verified as to the prescribed office hours:<br><br>
+        <center>
+        <u>______________________________________________</u><br>
+        <b><%= signatory.name.toUpperCase() %></b><br>
+        <i><%= signatory.position.toUpperCase() %></i>
+        </center>
+      </p>
     </div>
   <% }); %>
-  
 </body>
 </html>

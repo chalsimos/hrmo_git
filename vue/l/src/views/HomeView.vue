@@ -2,54 +2,92 @@
   <v-app>
     <!-- Navigation Drawer -->
     <v-navigation-drawer
-      v-if="userExists"
-      v-model="drawer"
-      app
-      temporary
-    >
-      <v-list>
-        <v-list-item-group>
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-home</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Home</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+  v-if="userExists"
+  v-model="drawer"
+  app
+  temporary
+>
+  <v-list>
+    <v-list-item-group>
+      <!-- Home Link -->
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon>mdi-home</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <router-link to="/" class="text-decoration-none">
+              Home
+            </router-link>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
 
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-account</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Profile</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+      <!-- Profile Link -->
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon>mdi-account</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <router-link to="/profile" class="text-decoration-none">
+              Profile
+            </router-link>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
 
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-logout</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                <!-- Logout Action -->
-                <v-btn
-                  color="error"
-                  small
-                  @click="logout"
-                >
-                  Logout
-                </v-btn>
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-item-group>
-      </v-list>
-    </v-navigation-drawer>
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon>mdi-map</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <router-link to="/locator" class="text-decoration-none">
+              Locators
+            </router-link>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <!-- File Locator Link -->
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon>mdi-file-find</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <router-link to="/file-locator" class="text-decoration-none">
+              File Locator
+            </router-link>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <!-- Logout -->
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon>mdi-logout</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <v-btn
+              color="error"
+              small
+              @click="logout"
+            >
+              Logout
+            </v-btn>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list-item-group>
+  </v-list>
+</v-navigation-drawer>
+
 
     <!-- App Bar -->
-    <v-app-bar v-if="userExists" app color="primary" dark>
+    <v-app-bar v-if="userExists" app color="success" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>Employee Locator</v-toolbar-title>
     </v-app-bar>
@@ -57,6 +95,7 @@
     <!-- Main Content -->
     <v-main>
       <v-container>
+        
         <h1>Mindoro State University</h1>
         <h2>Employee Online Locator</h2>
 
@@ -120,11 +159,9 @@
     </v-main>
   </v-app>
 </template>
-
 <script>
-import { signOut } from "firebase/auth";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import LoginButton from "../components/LoginButton.vue";
 
@@ -132,36 +169,51 @@ export default {
   components: { LoginButton },
   data() {
     return {
-      user: null,
-      userExists: false,
+      user: null, // Firebase authenticated user
+      userExists: false, // Tracks if the user exists in Firestore
       employeeId: "",
       fullName: "",
       mobileNumber: "",
       campus: "",
       campuses: ["Bongabong", "Calapan", "Main"],
-      loading: false, // Loading state
-      drawer: false, // Drawer visibility
+      loadingUserData: true, // Indicates whether Firestore data is being fetched
+      loading: false, // Indicates whether the form is saving
+      drawer: false, // Navigation drawer toggle
     };
   },
   methods: {
-    async checkUserInFirestore(user) {
-      this.user = user;
+    async fetchRegisteredName(email) {
+      try {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
 
-      // Check if the user exists in Firestore
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        this.userExists = true;
-      } else {
-        this.userExists = false; // Show the form
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0].data();
+          this.registeredName = userDoc.fullName || "Name not found";
+          this.employeeId = userDoc.employeeId || "";
+          this.campus = userDoc.campus || "Campus not Registered";
+          this.userExists = true; // User exists in Firestore
+        } else {
+          console.warn("No user found with this email.");
+          this.userExists = false; // User does not exist in Firestore
+        }
+      } catch (error) {
+        console.error("Error fetching registered name:", error);
+        this.userExists = false; // Handle errors gracefully
+      } finally {
+        this.loadingUserData = false; // Data fetching is complete
       }
     },
     async saveUserDetails() {
+      if (!this.employeeId || !this.fullName || !this.mobileNumber || !this.campus) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
       if (this.user) {
-        this.loading = true; // Start the loader
+        this.loading = true;
         try {
-          // Save user details in Firestore
           const userRef = doc(db, "users", this.user.uid);
           await setDoc(userRef, {
             employeeId: this.employeeId,
@@ -172,22 +224,22 @@ export default {
             photoURL: this.user.photoURL,
           });
 
-          this.userExists = true; // Hide the form after saving
+          this.userExists = true;
           alert("Profile updated successfully!");
         } catch (error) {
           console.error("Error saving user details:", error);
           alert("An error occurred. Please try again.");
         } finally {
-          this.loading = false; // Stop the loader
+          this.loading = false;
         }
       }
     },
     async logout() {
       try {
-        await signOut(auth); // Firebase sign-out
+        await signOut(auth);
         this.user = null;
-        this.userExists = false; // Reset user and app state
-        this.drawer = false; // Close drawer
+        this.userExists = false;
+        this.drawer = false;
         alert("Logged out successfully!");
       } catch (error) {
         console.error("Error logging out:", error);
@@ -196,14 +248,20 @@ export default {
     },
   },
   mounted() {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        this.checkUserInFirestore(user);
+        this.user = user;
+        await this.fetchRegisteredName(user.email); // Fetch Firestore data
+      } else {
+        this.user = null;
+        this.userExists = false;
+        this.loadingUserData = false; // No user is logged in
       }
     });
   },
 };
 </script>
+
 
 <style scoped>
 .mt-4 {
