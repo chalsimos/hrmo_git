@@ -149,21 +149,22 @@ const cashier = {
       res.status(500).send("An error occurred while adding the deduction.");
     }
   },
-  deduction: async (req, res) => {
-    try {
-      const employees = await employee.find().lean();
-      const deductions = await deduct.find().lean();
-      employees.forEach(employee => {
-        const empDeductions = deductions.filter(deduction => deduction.empno === employee.empno);
-        employee.deductions = empDeductions;
-        employee.itemizedDeductions = empDeductions.length > 0
-        ? empDeductions
-            .map(deduction => `${deduction.deduction}: ₱${Number(deduction.avalue).toFixed(2)}`)
-            .join(", ") 
-        : "No Deductions"; 
-      });
+ deduction: async (req, res) => {
+  try {
+    const employees = await employee.find().lean();
+    const deductions = await deduct.find().lean();
 
-    
+    employees.forEach(employee => {
+      const empDeductions = deductions.filter(deduction => deduction.empno === employee.empno);
+      employee.deductions = empDeductions;
+      employee.itemizedDeductions = empDeductions.length > 0
+        ? empDeductions.map(deduction => ({
+            name: deduction.deduction,
+            value: `₱${Number(deduction.avalue).toFixed(2)}`
+          }))
+        : [];
+    });
+
     res.render('hr/deductions', { employees, months, years });
   } catch (error) {
     console.error("Error fetching deductions:", error);

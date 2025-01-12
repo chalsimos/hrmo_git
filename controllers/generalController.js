@@ -10,40 +10,31 @@ const zkConfig = {
 const gen = {
     getAttendance: async(req, res) =>{
       const ip = req.params.id;
-  const zkInstance = new ZKLib(ip, zkConfig.port, zkConfig.timeout);
-
-  try {
-    await zkInstance.createSocket();
-    const logs = await zkInstance.getAttendances();
-    console.log('Raw Attendance Logs:', logs);
-
-    if (!Array.isArray(logs.data)) {
-      throw new Error('Attendance logs are not in array format');
-    }
-
-    const processedLogs = logs.data.map((log) => {
-      const recordTime = new Date(log.recordTime);
-      const date = recordTime.toISOString().split('T')[0];
-      const time = recordTime.toTimeString().split(' ')[0];
-
+      const zkInstance = new ZKLib(ip, zkConfig.port, zkConfig.timeout);
+      try {
+        await zkInstance.createSocket();
+        const logs = await zkInstance.getAttendances();
+        console.log('Raw Attendance Logs:', logs);
+        if (!Array.isArray(logs.data)) {
+          throw new Error('Attendance logs are not in array format');
+        }
+        const processedLogs = logs.data.map((log) => {
+        const recordTime = new Date(log.recordTime);
+        const date = recordTime.toISOString().split('T')[0];
+        const time = recordTime.toTimeString().split(' ')[0];
       return {
-        sid: log.deviceUserId, // Store the deviceUserId as 'sid'
-        date: date, // Date in YYYY-MM-DD format
-        time: time, // Raw time for insertion
+        sid: log.deviceUserId, 
+        date: date,
+        time: time,
       };
     });
 
-    // Process each attendance log and update or insert
     for (let log of processedLogs) {
       const { sid, date, time } = log;
-
-      // Check if the record already exists for this sid and date
       const existingRecord = await Time.findOne({ sid, date });
 
       if (existingRecord) {
         let updateData = {};
-
-        // Check each time field and insert into the next available one
         if (!existingRecord.am_time_in) {
           updateData.am_time_in = time;
         } else if (!existingRecord.am_time_out) {
@@ -57,17 +48,14 @@ const gen = {
         } else if (!existingRecord.ot_time_out) {
           updateData.ot_time_out = time;
         }
-
-        // If any time field was updated, save the changes
         if (Object.keys(updateData).length > 0) {
           await Time.updateOne({ sid, date }, { $set: updateData });
         }
       } else {
-        // If no existing record, create a new one
         const newRecord = new Time({
           sid,
           date,
-          am_time_in: time, // Insert into am_time_in first
+          am_time_in: time, 
         });
         await newRecord.save();
       }

@@ -8,6 +8,7 @@ const employeeSchema = new mongoose.Schema({
   cat_type: { type: String },
   area:{ type:String },
   empno: { type: String, required: true, unique: true },
+  schedule: { type: String },
   // sg: { type: String, required: true },
   // tranch: { type: String, required: true },
   // amount: { type: String, required: true },

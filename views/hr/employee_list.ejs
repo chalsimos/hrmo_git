@@ -59,7 +59,7 @@
                                       value="<%= employee.status %>" 
                                       <%= employee.status === 'active' ? 'checked' : '' %> 
                                     >
-                                    <a data-toggle="modal" data-id="<%= employee.sid %>" data-target="#addBookDialog" class="pritil">export</a>
+                                    <a data-toggle="modal" data-id="<%= employee.empno %>" data-target="#addBookDialog" class="pritil">export</a>
                                   </td>
                                 </tr>
                               <% }); %>
@@ -75,37 +75,37 @@
                           </table>
               
                           <!-- Add Book Dialog Modal -->
-                          <div id="addBookDialog" class="modal fade" role="dialog">
-                            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
-                            <div class="modal-dialog">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                </div>
-                                <div class="modal-body">
-                                  <h2 id="modal-title"></h2>
-                                  <form id="myForm" method="post" action='/filteryear'>
-                                    <input type="hidden" name="sid" id="ssid">
-                                    <div class="row">
-                                      <div class="col-lg-12">
-                                        <label>Year</label>
-                                        <select class="form-control" name="year">
-                                          <% for (let curyear = new Date().getFullYear(), baseYear = 2019; curyear >= baseYear; curyear--) { %>
-                                            <option value="<%= curyear %>"><%= curyear %></option>
-                                          <% } %>
-                                        </select>
-                                        <input type="checkbox" name="computation">include computation
-                                      </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                  <button type="submit" class="btn btn-primary">Filter</button>
-                                </div>
-                              </div>
-                            </form>
-                            </div>
-                          </div>
+                          <!-- Add Book Dialog Modal -->
+<div id="addBookDialog" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Export Data</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="myForm" method="post" action="/dtrperemp">
+          <input type="hidden" name="sid" id="ssid">
+          <div class="row">
+            <div class="col-lg-12">
+              <label>Year</label>
+              <select class="form-control" name="year">
+                <% for (let curyear = new Date().getFullYear(), baseYear = 2019; curyear >= baseYear; curyear--) { %>
+                  <option value="<%= curyear %>"><%= curyear %></option>
+                <% } %>
+              </select>
+              <input type="checkbox" name="computation">include computation
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
               
                           <!-- Modal 2 (Modify Employee Modal) -->
                           <div id="modal2" class="modal">
@@ -175,3 +175,38 @@
           </div>
         </div>
         <%- include('../partials/end') %>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+  // Attach a click event to all elements with the class "pritil"
+  const exportLinks = document.querySelectorAll(".pritil");
+
+  exportLinks.forEach(link => {
+    link.addEventListener("click", function (event) {
+      // Prevent default action
+      event.preventDefault();
+
+      // Get the SID from the data-id attribute
+      const sid = this.getAttribute("data-id");
+
+      // Set the SID in the modal's hidden input field
+      const sidInput = document.getElementById("ssid");
+      if (sidInput) {
+        sidInput.value = sid;
+      }
+
+      // Optionally set the modal title or other fields if needed
+      const modalTitle = document.getElementById("modal-title");
+      if (modalTitle) {
+        modalTitle.textContent = `Export Data for SID: ${sid}`;
+      }
+
+      // Show the modal (Bootstrap 5)
+      const modalElement = document.getElementById("addBookDialog");
+      if (modalElement) {
+        const bootstrapModal = new bootstrap.Modal(modalElement);
+        bootstrapModal.show();
+      }
+    });
+  });
+});
+</script>

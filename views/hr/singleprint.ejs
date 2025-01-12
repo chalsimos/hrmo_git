@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title><%= employee.lname %>_<%= employee.fname %></title>
+  <style>
+    @media print {
+      #page-footer {
+        display: none;
+      }
+    }
+    @page {
+      size: 8.5in 13in;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 0.5fr 0.5fr;
+      height: auto;
+    }
+    .column {
+      padding: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      table-layout: fixed;
+      width: 100%;
+    }
+    td.dotted {
+      border: 1px dotted black;
+    }
+    .dotted-line {
+      border-style: dotted;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid;
+      height: 1px;
+      margin-top: 1px;
+      margin-bottom: 5px;
+    }
+    .fth {
+      width: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<% let ctr = 0; %>
+<% for (const [monthNumber, monthData] of Object.entries(months)) { 
+     ctr++;
+     const monthName = monthData.name;
+     const numDays = monthData.days; %>
+
+  <% if (ctr % 2 === 0) { %>
+    <div class="column">
+      Civil Service Form No. 48 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Card No. <%= employee.sid %>
+
+      <div style="text-align: center;">
+        <h3 align='center'>DAILY TIME RECORD</h3>
+        <b><%= `${employee.lname.toUpperCase()}, ${employee.fname.toUpperCase()} ${employee.mname.charAt(0).toUpperCase()}` %></b>
+        <hr>
+        (NAME)
+        <br>
+        <b><%= employee.dept.toUpperCase() %></b>
+        <hr>
+        (DIVISION)
+        <br><br>
+      </div>
+
+      For the month of <u>&emsp;&emsp;&emsp;&emsp;<%= `${monthName} ${year}` %>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</u>
+      <br>
+      Official hours for arrival &emsp;&emsp;{Regular days <u>&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;</u>
+      <br>
+      &emsp;&emsp;&emsp;&emsp;and departure &emsp;&emsp;{Saturdays <u>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</u>
+
+      <br><br>
+      <table border="1" width="100%">
+        <tr>
+          <th rowspan="2" class="fth">Day</th>
+          <th colspan="2">A.M.</th>
+          <th colspan="2">P.M.</th>
+          <th colspan="2">Undertime</th>
+        </tr>
+        <tr>
+          <td><font size="2"> Arrival</font></td>
+          <td><font size="2"> Departure</font></td>
+          <td><font size="2"> Arrival</font></td>
+          <td><font size="2"> Departure</font></td>
+          <td><font size="2"> Hours</font></td>
+          <td><font size="2"> Minutes</font></td>
+        </tr>
+        <% for (let i = 1; i <= numDays; i++) { 
+             const date = new Date(year, monthNumber - 1, i).toISOString().slice(0, 10);
+             const dayData = dataset.find(d => d.date === date);
+        %>
+        <tr>
+          <td class="dotted">
+            <%= new Date(date).getDay() >= 6 ? `<b>${i}</b>` : i %>
+          </td>
+          <% if (dayData) { %>
+            <td class="dotted" width="10"><font size='1.5'><b><%= dayData.am_time_in ? new Date(dayData.am_time_in).toLocaleTimeString() : "" %></b></font></td>
+            <td class="dotted" width="100"><font size='1.5'><b><%= dayData.am_time_out ? new Date(dayData.am_time_out).toLocaleTimeString() : "" %></b></font></td>
+            <td class="dotted" width="100"><font size='1.5'><b><%= dayData.pm_time_in ? new Date(dayData.pm_time_in).toLocaleTimeString() : "" %></b></font></td>
+            <td class="dotted" width="100"><font size='1.5'><b><%= dayData.pm_time_out ? new Date(dayData.pm_time_out).toLocaleTimeString() : "" %></b></font></td>
+            <td class="dotted" width="100"><font size='1.5'><b><%= dayData.ot_time_in ? new Date(dayData.ot_time_in).toLocaleTimeString() : "" %></b></font></td>
+            <td class="dotted" width="100"><font size='1.5'><b><%= dayData.ot_time_out ? new Date(dayData.ot_time_out).toLocaleTimeString() : "" %></b></font></td>
+          <% } else { %>
+            <td class="dotted" width="100"></td>
+            <td class="dotted" width="100"></td>
+            <td class="dotted" width="100"></td>
+            <td class="dotted" width="100"></td>
+            <td class="dotted" width="100"></td>
+            <td class="dotted" width="100"></td>
+          <% } %>
+        </tr>
+        <% } %>
+        <tr>
+          <td colspan="7">&emsp;&emsp;&emsp;&emsp;TOTAL ________________________</td>
+        </tr>
+      </table>
+      I certify on my honor that the above is a true and correct report <br>
+      of the hours of work performed, record of which was made daily <br>
+      at the time of arrival and departure from office.</font>
+      <br><br>
+      <div style="text-align: right;">
+        <u>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</u>
+        Employee&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+      </div>
+      <br>
+      <hr class="dotted-line">
+      VERIFIED as to the prescribe office hours.
+      <br><br><br>
+      <div style="text-align: center;">
+        <u>&emsp;<%= signatory.name.toUpperCase() %>&emsp;</u>
+        <br>
+        <%= signatory.position %>
+      </div>
+      <br><br><br><br><br><br><br>
+      <font size="2"><i>Report Generated by: Christian Cabrera</i></font>
+    </div>
+  <% } else { %>
+    <!-- Similar structure for odd months -->
+  <% } %>
+<% } %>
+</body>
+</html>

@@ -100,40 +100,61 @@
           <td>Hours</td>
           <td>Minutes</td>
         </tr>
-
         <% 
         let employeeTotalLateMinutes = 0;
         for (let i = 1; i <= num; i++) {
-          const date = new Date(year, month - 1, i).toISOString().slice(0, 10); 
+          const date = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
           let hasData = false;
           let lateHours = 0;
           let lateMinutes = 0;
 
           const dayData = dataset.find(d => d.date === date && d.sid === employee.empno);
-          if (dayData && dayData.am_time_in) {
+
+          if (dayData) {
             hasData = true;
-            const scheduledTime = new Date('1970-01-01T08:00:00');
-            const actualTimeIn = new Date('1970-01-01T' + dayData.am_time_in);
 
-            if (actualTimeIn > scheduledTime) {
-              const interval = actualTimeIn - scheduledTime;
-              lateHours = Math.floor(interval / 3600000);
-              lateMinutes = Math.floor((interval % 3600000) / 60000);
-              employeeTotalLateMinutes += lateMinutes;
+            // Log the date with records
+            <!-- console.log(`Record Found - Employee: ${employee.empno}, Date: ${dayData.date}`); -->
 
-              if (i >= 1 && i <= 10) {
-                lateMinutes1to10 += lateMinutes;
-              } else if (i >= 11 && i <= 25) {
-                lateMinutes11to25 += lateMinutes;
-              } else if (i >= 26 && i <= 31) {
-                lateMinutes26to31 += lateMinutes;
+            if (dayData.am_time_in) {
+              const scheduledTime = new Date('1970-01-01T08:00:00');
+              const actualTimeIn = new Date('1970-01-01T' + dayData.am_time_in);
+
+              if (actualTimeIn > scheduledTime) {
+                const interval = actualTimeIn - scheduledTime;
+                lateHours = Math.floor(interval / 3600000);
+                lateMinutes = Math.floor((interval % 3600000) / 60000);
+                employeeTotalLateMinutes += lateMinutes;
+
+                if (i >= 1 && i <= 10) {
+                  lateMinutes1to10 += lateMinutes;
+                } else if (i >= 11 && i <= 25) {
+                  lateMinutes11to25 += lateMinutes;
+                } else if (i >= 26 && i <= 31) {
+                  lateMinutes26to31 += lateMinutes;
+                }
               }
             }
+          } else {
+            
+              console.log(`No Record - Employee: ${employee.empno}, Date: ${date}`);
+              <!-- now insert this record to absent model {empno: empno, date:date} -->
+            
           }
         %>
           <tr>
-            <td class="dotted"><%= i %></td>
+            <td class="dotted">
+               <% 
+      const dayOfWeek = new Date(year, month - 1, i).getDay(); 
+    %>
+    <% if (dayOfWeek === 0 || dayOfWeek === 6) { %>
+      <b><%= i %></b>
+    <% } else { %>
+      <%= i %>
+    <% } %>
+            </td>
             <% if (hasData) { %>
+              
               <td class="dotted"><%= dayData.am_time_in || '0' %></td>
               <td class="dotted"><%= dayData.am_time_out || '0' %></td>
               <td class="dotted"><%= dayData.pm_time_in || '0' %></td>
@@ -141,6 +162,7 @@
               <td class="dotted"><%= lateHours %></td>
               <td class="dotted"><%= lateMinutes %></td>
             <% } else { %>
+              
               <td class="dotted"></td>
               <td class="dotted"></td>
               <td class="dotted"></td>

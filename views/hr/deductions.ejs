@@ -43,25 +43,36 @@
                                 </tr>
                             </thead>
                             <tbody>
-  <% employees.forEach((employee, index) => { %>
-    <tr>
-      <td><%= index + 1 %></td>
-      <td><%= employee.empno %></td>
-      <td><%= employee.lname %>, <%= employee.fname %></td>
-      <td><%= employee.itemizedDeductions %></td>
-      <td>
-        <a 
-          href="#" 
-          class="pritil modify-btn" 
-          data-toggle="modal" 
-          data-target="#modifyDeductions" 
-          data-empno="<%= employee.empno %>" 
-          data-deductions='<%= JSON.stringify(employee.deductions || []) %>'>
-          Modify
-        </a>
-      </td>
-    </tr>
-  <% }) %>
+ <% employees.forEach((employee, index) => { %>
+  <tr>
+    <td><%= index + 1 %></td>
+    <td><%= employee.empno %></td>
+    <td><%= employee.lname %>, <%= employee.fname %></td>
+    <td>
+      <% if (employee.itemizedDeductions.length > 0) { %>
+        <ul>
+          <% employee.itemizedDeductions.forEach(deduction => { %>
+            <li><%= deduction.name %>: <%= deduction.value %></li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        No Deductions
+      <% } %>
+    </td>
+    <td>
+      <a 
+        href="#" 
+        class="pritil modify-btn" 
+        data-toggle="modal" 
+        data-target="#modifyDeductions" 
+        data-empno="<%= employee.empno %>" 
+        data-deductions='<%= JSON.stringify(employee.deductions || []) %>'>
+        Modify
+      </a>
+    </td>
+  </tr>
+<% }) %>
+
 </tbody>
 
                             <tfoot>

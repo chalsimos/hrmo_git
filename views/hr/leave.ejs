@@ -54,24 +54,32 @@
         <tbody>
             <!-- Iterate over the onleave array and display each leave record -->
             <% onleave.forEach(leave => { %>
-            <tr>
-                <td><%= leave.empno %></td>
-                <td><%= leave.name %></td>
-                <td><%= new Date(leave.from).toLocaleDateString() %></td> <!-- Format the date -->
-                <td><%= new Date(leave.to).toLocaleDateString() %></td> <!-- Format the date -->
-                <td><%= leave.reason %></td>
-                <td><%= leave.others %></td>
-                
-                <% 
-                    // Compute the number of leave days
-                    const fromDate = new Date(leave.from);
-                    const toDate = new Date(leave.to);
-                    const timeDifference = toDate - fromDate;
-                    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) + 1; // Including both start and end date
-                %>
-                <td><%= daysDifference %> days</td> <!-- Display the computed number of leave days -->
-            </tr>
-            <% }); %>
+    <% 
+        // Get current date
+        const currentDate = new Date();
+        
+        // Check if both 'from' and 'to' dates are in the past
+        const fromDate = new Date(leave.from);
+        const toDate = new Date(leave.to);
+        const isPastLeave = fromDate < currentDate && toDate < currentDate;
+    %>
+    <tr class="<%= isPastLeave ? 'past-leave' : '' %>">
+        <td><%= leave.empno %></td>
+        <td><%= leave.name %></td>
+        <td><%= new Date(leave.from).toLocaleDateString() %></td> <!-- Format the date -->
+        <td><%= new Date(leave.to).toLocaleDateString() %></td> <!-- Format the date -->
+        <td><%= leave.reason %></td>
+        <td><%= leave.others %></td>
+        
+        <% 
+            // Compute the number of leave days
+            const timeDifference = toDate - fromDate;
+            const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) + 1; // Including both start and end date
+        %>
+        <td><%= daysDifference %> days</td> <!-- Display the computed number of leave days -->
+    </tr>
+<% }); %>
+
             <tfoot>
             <tr>
                 <th>Employee No</th>
@@ -140,6 +148,78 @@
                             </div>
                         </div>
                     </div>
+                    <!-- past leaves -->
+                     <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Past Leaves</h3>
+                                </div>
+                                <div class="card-body">
+                                   
+
+                                    <div class="date-filter">
+    <label for="monthFilter">Filter by Month:</label>
+    <select id="monthFilter" name="monthFilter">
+        <option value="">All Months</option>
+        <% for (let m = 0; m < 12; m++) { %>
+            <option value="<%= m %>"><%= new Date(0, m).toLocaleString("en", { month: "long" }) %></option>
+        <% } %>
+    </select>
+
+    <label for="yearFilter">Filter by Year:</label>
+    <select id="yearFilter" name="yearFilter">
+        <option value="">All Years</option>
+        <% const currentYear = new Date().getFullYear(); %>
+<% const startYear = 2021; %>
+<% for (let y = startYear; y <= currentYear + 1; y++) { %>
+    <option value="<%= y %>"><%= y %></option>
+<% } %>
+
+    </select>
+</div>
+
+<table id="leaveTable" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Employee No</th>
+            <th>Name</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Reason</th>
+            <th>Others</th>
+            <th>Days</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% pastLeave.forEach(leave => { %>
+        <tr>
+            <td><%= leave.empno %></td>
+            <td><%= leave.name %></td>
+            <td><%= new Date(leave.from).toLocaleDateString() %></td>
+            <td><%= new Date(leave.to).toLocaleDateString() %></td>
+            <td><%= leave.reason %></td>
+            <td><%= leave.others %></td>
+            <td>
+                <% 
+                    const fromDate = new Date(leave.from);
+                    const toDate = new Date(leave.to);
+                    const timeDifference = toDate - fromDate;
+                    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) + 1; 
+                %>
+                <%= daysDifference %> days
+            </td>
+        </tr>
+        <% }); %>
+    </tbody>
+</table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end past leave -->
+                    
 
                 </div>
               </section>
@@ -148,3 +228,36 @@
     </div>
 </body>
 <%- include('../partials/end') %>
+<script>
+    $(document).ready(function () {
+    // Initialize the DataTable
+    const table = $('#leaveTable').DataTable({
+        dom: 'Bfrtip', // Add search box, pagination, etc.
+        order: [[2, 'asc']], // Order by the "From" date column
+    });
+
+    // Custom filtering function for month and year
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        const month = $('#monthFilter').val();
+        const year = $('#yearFilter').val();
+
+        const fromDate = new Date(data[2]); // "From" date column
+        const rowMonth = fromDate.getMonth();
+        const rowYear = fromDate.getFullYear();
+
+        if (
+            (!month || rowMonth == month) && 
+            (!year || rowYear == year)
+        ) {
+            return true;
+        }
+        return false;
+    });
+
+    // Event listeners for month and year dropdowns
+    $('#monthFilter, #yearFilter').on('change', function () {
+        table.draw(); // Redraw the table with the new filter applied
+    });
+});
+
+</script>

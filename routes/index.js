@@ -24,6 +24,7 @@ router.post("/addemployee", roleAuth(['admin', 'hr']),  bookController.add_emplo
 router.get("/salary", roleAuth(['admin', 'hr']),  bookController.salary);
 router.post("/addsalary", roleAuth(['admin', 'hr']),  bookController.addsalary);
 router.get("/filteryear", roleAuth(['admin', 'hr']),  bookController.filteryear);
+router.post("/dtrperemp", roleAuth(['admin', 'hr']),  bookController.dtrperemp);
 router.get("/service-record/:id", roleAuth(['admin', 'hr']),  bookController.serviceRecord);
 router.get("/service-record-print/:id", roleAuth(['admin', 'hr']),  bookController.printServiceRecord);
 router.post("/add-service-record", roleAuth(['admin', 'hr']),  bookController.addserviceRecord);
@@ -32,6 +33,7 @@ router.post("/add-position", roleAuth(['admin', 'hr']),  bookController.addPosit
 router.post("/update-time", roleAuth(['admin', 'hr']),  bookController.update_time);
 router.post("/file-leave", roleAuth(['admin', 'hr']),  bookController.fileFeave);
 router.get("/leave-report", roleAuth(['admin', 'hr']),  bookController.leaveReport);
+router.get("/leave", bookController.leaveReport);
 router.get("/locator", roleAuth(['admin', 'hr']),  bookController.locator);
 router.get("/olacator", roleAuth(['admin', 'hr']),  bookController.olacator);
 router.get("/admin/approve/:id", roleAuth(['admin', 'hr']),  bookController.approveLocator);

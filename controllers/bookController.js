@@ -1,5 +1,6 @@
 const firebase = require("firebase/app");
 require("firebase/firestore");
+const mongoose = require('mongoose');
 
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, getDocs,updateDoc, doc, } = require("firebase/firestore");
@@ -21,6 +22,7 @@ const srecord = require("../models/ServiceRecord");
 const positionModel = require("../models/positionModel");
 const leaveModel = require("../models/leaveModel");
 const deduct = require("../models/DeductionModel");
+const absentmodel = require("../models/absentModel");
 const multer = require("multer");
 const csvParser = require("csv-parser");
 const locatorModel = require("../models/locatorModel");
@@ -73,7 +75,10 @@ const years = [];
 for (let year = 2019; year <= currentYear; year++) {
   years.unshift(year);
 }
-
+  // Helper function to check for leap year
+function isLeapYear(year) {
+  return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+}
 const bookers = {
   saveEncoded: async(req, res) =>{
     const { locatorNo, empname, empno, location, purpose, departure, arrival } = req.body;
@@ -189,6 +194,7 @@ locatorValidator: async(req, res) =>{
         empno,
         deduction,
         avalue,
+        schedule
       } = req.body;
       const campus = cmp.campus;
       const status = "active";
@@ -205,18 +211,34 @@ locatorValidator: async(req, res) =>{
           empno,
           status,
           campus,
+          schedule
         },
         { new: true, runValidators: true }
       );
       if (!updatedEmployee) {
         return res.status(404).send("Employee not found.");
       }
-      const deductions = new deduct({
-        empno: id,
-        deduction: deduction,
-        avalue: avalue,
-      });
-      await deductions.save();
+      
+      
+      
+      
+      
+      
+      const updatedDeduction = await deduct.findOneAndUpdate(
+        { empno: id, deduction: deduction }, 
+        { $set: { avalue: avalue } },        
+        { 
+          new: true,  
+          upsert: false 
+        }
+      );
+
+if (updatedDeduction) {
+  console.log("Deduction updated:", updatedDeduction);
+} else {
+  console.log("No matching record found to update.");
+}
+
 
       const referrer = req.headers.referer;
       res.redirect(referrer);
@@ -297,12 +319,12 @@ locatorValidator: async(req, res) =>{
     res.render("hr/locatorPrint", { slipsData, data, user, campus });
   },
   approveLocator: async (req, res) =>{
-      const locatorId = req.params.id; // Get the document ID from the URL
+      const locatorId = req.params.id; 
   try {
-    // Reference the specific document in the "locators" collection
+    
     const locatorDocRef = doc(db, "locators", locatorId);
 
-    // Update the status field to "approved"
+    
     await updateDoc(locatorDocRef, {
       status: "approved",
     });
@@ -439,18 +461,30 @@ const user = req.session.user || null;
 },
 
   leaveReport: async (req, res) => {
+  try {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
+
+    
     const startOfMonth = new Date(currentYear, currentMonth, 1);
     const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+    
     const onleave = await leaveModel.find({
       from: { $gte: startOfMonth.toISOString() },
       to: { $lte: endOfMonth.toISOString() },
     });
+
     const upcomingLeaves = await leaveModel
       .find({ from: { $gte: currentDate.toISOString() } })
       .sort({ from: 1 });
+
+    const pastLeave = await leaveModel
+      .find({ to: { $lt: currentDate.toISOString() } })
+      .sort({ to: -1 }); 
+
+    
     const user = req.session.user || null;
     res.render("hr/leave", {
       month: currentMonth + 1,
@@ -459,9 +493,15 @@ const user = req.session.user || null;
       months,
       years,
       upcomingLeaves,
+      pastLeave,
       user,
     });
-  },
+  } catch (error) {
+    console.error("Error fetching leave data:", error);
+    res.status(500).send("An error occurred while fetching leave data.");
+  }
+},
+
 
   fileFeave: async (req, res) => {
     const { empno, name, from, to, reason, others } = req.body;
@@ -613,6 +653,30 @@ const user = req.session.user || null;
     const referer = req.headers.referer || "/";
     res.redirect(referer);
   },
+  dtrperemp: async(req, res) =>{
+  
+   try {
+    // Validate and convert sid to ObjectId
+    const { sid } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(sid)) {
+      return res.status(400).send("Invalid Employee ID");
+    }
+
+    // Fetch the employee using findById
+    const employeee = await employee.findById(sid);
+
+    if (!employeee) {
+      return res.status(404).send("Employee not found");
+    }
+
+    // Pass employee to the template
+    res.render('hr/singleprint', { employeee });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+  },
   filteryear: async (req, res) => {
     const empNo = req.query.empno;
     const year = req.query.year;
@@ -690,95 +754,133 @@ const user = req.session.user || null;
 
 
 
-  export: async (req, res) => {
-  const { emptype, month, year, mdeduct } = req.body;
 
-  try {
-    const employees = await employee.find();
 
-    
-    const allServiceRecords = await srecord.find().sort({ end: -1 });
-    const serviceRecordMap = new Map();
+ export: async (req, res) => {
+    const { emptype, month, year, mdeduct } = req.body;
+    try {
+      const employees = await employee.find();
 
-    allServiceRecords.forEach((record) => {
-      if (!serviceRecordMap.has(record.empno)) {
-        serviceRecordMap.set(record.empno, record.salary);
-      }
-    });
+      // Determine the number of days in the month
+      const one = ["01", "03", "05", "07", "08", "10", "12"];
+      const num = one.includes(month) ? 31 : (month === "02" ? (isLeapYear(year) ? 29 : 28) : 30); // Handle February for leap year
 
-    const employeesWithSalaries = await Promise.all(
-      employees.map(async (emp) => {
-        
-        emp.amount = serviceRecordMap.get(emp.empno) || 0;
-
-        
-        if (mdeduct) {
-          const deductions = await deduct.find({ empno: emp.empno });
-          emp.deductions = deductions.map((deduction) => ({
-            name: deduction.deduction,
-            value: parseFloat(deduction.avalue),
-          }));
+      const allServiceRecords = await srecord.find().sort({ end: -1 });
+      const serviceRecordMap = new Map();
+      allServiceRecords.forEach((record) => {
+        if (!serviceRecordMap.has(record.empno)) {
+          serviceRecordMap.set(record.empno, record.salary);
         }
-
-        return emp;
-      })
-    );
-
-    
-    if (mdeduct) {
-      const payrollRecords = employeesWithSalaries.map((emp) => {
-        const totalDeductions = emp.deductions
-          ? emp.deductions.reduce((sum, ded) => sum + ded.value, 0)
-          : 0;
-
-        const deductions = emp.deductions.reduce(
-          (dedObj, ded) => {
-            dedObj[ded.name.toLowerCase()] = ded.value;
-            return dedObj;
-          },
-          {
-            sss: 0,
-            philhealth: 0,
-            pagibig: 0,
-            gsis: 0,
-            loans: 0,
-            leaveWithoutPay: 0,
-          }
-        );
-
-        return {
-          employeeId: emp.empno,
-          name: `${emp.fname} ${emp.lname}`,
-          basicSalary: emp.amount,
-          allowances: 0,
-          deductions: {
-            ...deductions,
-            totalDeductions: totalDeductions,
-          },
-          netPay: emp.amount - totalDeductions,
-          payPeriod: { month, year },
-          status: "Pending",
-        };
       });
 
-      await payrol.insertMany(payrollRecords);
+      const employeesWithSalaries = await Promise.all(
+        employees.map(async (emp) => {
+          emp.amount = serviceRecordMap.get(emp.empno) || 0;
+          if (mdeduct) {
+            const deductions = await deduct.find({ empno: emp.empno });
+            emp.deductions = deductions.map((deduction) => ({
+              name: deduction.deduction,
+              value: parseFloat(deduction.avalue),
+            }));
+          }
+          return emp;
+        })
+      );
+
+      if (mdeduct) {
+        const payrollRecords = employeesWithSalaries.map((emp) => {
+          const totalDeductions = emp.deductions
+            ? emp.deductions.reduce((sum, ded) => sum + ded.value, 0)
+            : 0;
+          const deductions = emp.deductions.reduce(
+            (dedObj, ded) => {
+              dedObj[ded.name.toLowerCase()] = ded.value;
+              return dedObj;
+            },
+            {
+              sss: 0,
+              philhealth: 0,
+              pagibig: 0,
+              gsis: 0,
+              loans: 0,
+              leaveWithoutPay: 0,
+            }
+          );
+          return {
+            employeeId: emp.empno,
+            name: `${emp.fname} ${emp.lname}`,
+            basicSalary: emp.amount,
+            allowances: 0,
+            deductions: {
+              ...deductions,
+              totalDeductions: totalDeductions,
+            },
+            netPay: emp.amount - totalDeductions,
+            payPeriod: { month, year },
+            status: "Pending",
+          };
+        });
+        await payrol.insertMany(payrollRecords);
+      }
+
+      const dataset = await TModel.find({ month, year });
+      const absentEntries = [];
+
+      employees.forEach((employee) => {
+        for (let i = 1; i <= num; i++) {
+          
+          
+          const dates = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+          const dayOfWeek = new Date(year, month - 1, i).getDay();
+          let hasData = false;
+          // console.log(dates);
+          if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
+          
+          
+          const dayData = dataset.find((d) => d.date === dates && d.sid === employee.empno);
+          // const dayData = dataset.find(d => d.date === date && d.sid === employee.empno);
+          // If no matching record found for the day, add the absence entry
+          
+          // console.log(dayData);
+          
+          if (dayData) {
+          //   hasData = true;
+          //   console.log(`Employee  - Record: ${employee.empno}, Date: ${date}`);
+          //   // absentEntries.push({ empno: employee.empno, date: date }); // Only save absence entry, no date saved
+          }else{
+            // console.log(`No Record - Employee: ${employee.empno}, Date: ${dates}`);
+            // console.log(dates);
+          }
+        }
+      });
+
+      // Save absences to the database
+      if (absentEntries.length > 0) {
+        try {
+          await absentmodel.insertMany(absentEntries);
+          console.log("Absences saved successfully.");
+        } catch (error) {
+          console.error("Error saving absences:", error);
+        }
+      }
+
+      const data = {
+        year,
+        month,
+        ftype: emptype,
+        employees: employeesWithSalaries,
+        dataset: await TModel.find(),
+        absentEntries,
+        signatory: await signatories.findOne({ status: "active" }),
+      };
+      res.render("hr/print", data);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).send("Failed to export data.");
     }
+  },
 
-    const data = {
-      year,
-      month,
-      ftype: emptype,
-      employees: employeesWithSalaries,
-      dataset: await TModel.find(),
-      signatory: await signatories.findOne({ status: "active" }),
-    };
 
-    res.render("hr/print", data);
-  } catch (error) {
-    console.error("Error exporting data:", error);
-    res.status(500).send("Failed to export data.");
-  }
-},
   addEmployee: (req, res) => {
     const user = req.session.user || null;
     const success = req.flash("success");
