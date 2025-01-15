@@ -5,9 +5,11 @@ const { roleAuth } = require('../middleware/authMiddleware');
 const bookController = require("../controllers/bookController");
 const cashierController = require("../controllers/cashierController")
 const generalController = require("../controllers/generalController");
-
+router.post("/unlock", authController.unlock);
 router.get("/check-device", generalController.getDeviceInfo);
 router.post("/update-device", generalController.updateDevice);
+router.post("/add-device", generalController.addDevice);
+
 router.get("/attendance/:id", generalController.getAttendance);
 // router.get("/main", roleAuth(['admin', 'hr']), bookController.HrIndex);
 router.get("/main", roleAuth(['admin', 'hr']), bookController.HrIndex);

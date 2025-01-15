@@ -80,6 +80,7 @@ function isLeapYear(year) {
   return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
 }
 const bookers = {
+  
   saveEncoded: async(req, res) =>{
     const { locatorNo, empname, empno, location, purpose, departure, arrival } = req.body;
     const newLocator = new filedLocator({ locatorNo, empname, empno, location, purpose, departure, arrival, status: 'incomplete' });
@@ -748,19 +749,14 @@ const user = req.session.user || null;
 
 
 
-
-
-
-
-
-
-
-
  export: async (req, res) => {
+    const cmp = req.session.user || null;    
     const { emptype, month, year, mdeduct } = req.body;
+    const campus = cmp.campus;
+   
     try {
-      const employees = await employee.find();
-
+      const employees = await employee.find({campus: campus});
+      
       // Determine the number of days in the month
       const one = ["01", "03", "05", "07", "08", "10", "12"];
       const num = one.includes(month) ? 31 : (month === "02" ? (isLeapYear(year) ? 29 : 28) : 30); // Handle February for leap year
@@ -825,7 +821,11 @@ const user = req.session.user || null;
 
       const dataset = await TModel.find({ month, year });
       const absentEntries = [];
-
+      // determine if employee schedule is 7am or 8am or 9am
+      // if schedule is 7, time out in lunch is 12 and time in is 1pm, time out in afternoon is 4pm
+      // if 9am, 9-1, 2-6
+      // else 8-12, 1-5
+      // identify the number of minutes late, the deduction for late is rate / 8hours / 60 * actual minute
       employees.forEach((employee) => {
         for (let i = 1; i <= num; i++) {
           

@@ -6,7 +6,25 @@ exports.regView = (req, res) =>{
   const user = req.session.user || null;
   res.render('register', { error: null, user });
 };
-
+exports.unlock =async (req, res) =>{
+  const { password } = req.body;
+  const usr = req.session.user || null;
+  const counter = 0;
+  const email = usr.email;
+  const user = await User.findOne({ email });
+  try{
+    if (user && (await bcrypt.compare(password, usr.password))) {
+      req.session.isLocked = false; 
+          res.redirect('/main'); 
+    }else{
+      req.flash('error', 'Incorrect password. Try again.');
+    res.redirect('/lock'); 
+    }
+  }catch(error){
+    req.flash('error', 'Incorrect password. Try again.');
+    res.redirect('/lock'); 
+  }
+},
 exports.register = async (req, res) => {
   const { name, email, password, passwordConfirm, campus, role } = req.body;
   const user = req.session.user || null;

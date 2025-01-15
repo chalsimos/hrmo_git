@@ -62,7 +62,7 @@
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a href="/employees" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
+                  <i class="fa fa-list nav-icon"></i>
                   <p>List</p>
                 </a>
               </li>
@@ -74,13 +74,13 @@
               </li>
               <li class="nav-item">
                 <a href="#" data-toggle="modal" class="nav-link" data-target="#batch">
-                  <i class="far fa-circle nav-icon"></i>
+                  <i class="fa fa-cloud-upload nav-icon"></i>
                   <p>Batch Upload</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#" data-toggle="modal" class="nav-link" data-target="#batch">
-                  <i class="far fa-circle nav-icon"></i>
+                  <i class="fa fa-calculator nav-icon"></i>
                   <p>Cumulative Computation</p>
                 </a>
               </li>
@@ -88,13 +88,13 @@
           </li>
           <li class="nav-item">
             <a href="#" data-toggle="modal" class="nav-link" data-target="#myModal">
-              <i class="nav-icon fas fa-th"></i>
+              <i class="nav-icon fas fa-upload"></i>
               <p>Import</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#" data-toggle="modal" class="nav-link" data-target="#export">
-              <i class="nav-icon fas fa-th"></i>
+              <i class="nav-icon fas fa-download"></i>
               <p>Export DTR</p>
             </a>
           </li>
@@ -106,13 +106,13 @@
           </li>
           <li class="nav-item">
             <a href="/leave-report" class="nav-link">
-              <i class="nav-icon fas fa-th"></i>
+              <i class="nav-icon fas fa-file"></i>
               <p>Leave Report</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="/system-accounts" class="nav-link">
-              <i class="nav-icon fas fa-copy"></i>
+              <i class="nav-icon fas fa-compass"></i>
               <p>Locators<i class="fas fa-angle-left right"></i></p>
             </a>
             <ul class="nav nav-treeview">
@@ -133,19 +133,36 @@
           
           <li class="nav-item">
             <a href="/history" class="nav-link">
-              <i class="nav-icon fas fa-th"></i>
+              <i class="nav-icon fas fa-history"></i>
               <p>History</p>
             </a>
           </li>
-          <li class="nav-item">
-            <a href="/signatories" class="nav-link">
-              <i class="far fa-circle nav-icon"></i>
-              <p>Signatories</p>
-            </a>
-          </li>
+          
+<!-- start of configuration -->
           <li class="nav-item">
             <a href="/system-accounts" class="nav-link">
-              <i class="nav-icon fas fa-copy"></i>
+              <i class="nav-icon fas fa-cog"></i>
+              <p>Configuration<i class="fas fa-angle-left right"></i></p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/signatories" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Signatories</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/position" class="nav-link">
+                  <i class="nav-icon fas fa-th"></i>
+                  <p>Position/Designation</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <!-- end of configuration -->
+          <li class="nav-item">
+            <a href="/system-accounts" class="nav-link">
+              <i class="nav-icon fas fa-users"></i>
               <p>Accounts<i class="fas fa-angle-left right"></i></p>
             </a>
             <ul class="nav nav-treeview">
@@ -157,7 +174,7 @@
               </li>
               <li class="nav-item">
                 <a href="/register" class="nav-link">
-                  <i class="far fa-user-plus nav-icon"></i>
+                  <i class="far fa-user nav-icon"></i>
                   <p>Add System User</p>
                 </a>
               </li>
@@ -166,7 +183,7 @@
         <% } %>
         <li class="nav-item">
           <a href="/logout" class="nav-link">
-            <i class="far fa-circle nav-icon"></i>
+            <i class="nav-icon fa fa-sign-out"></i>
             <p>Logout</p>
           </a>
         </li>

@@ -110,36 +110,32 @@ const gen = {
     res.status(500).send("There was an error processing the attendance data.");
   }
 },
+addDevice: async(req, res) =>{
+  const { ip, name } = req.body; 
+  
+},
   updateDevice: async (req, res) => {
     const { ip, newIp, name } = req.body; 
-
     try {
-        
-        if (ip === newIp) {
-            
+        if (ip === newIp) {   
             const result = await devices.findOneAndUpdate(
                 { ipAddress: ip }, 
                 { $set: { name: name } }, 
                 { new: true } 
             );
-
             if (!result) {
                 return res.status(404).send('Device not found');
             }
-
             return res.send({ ip, name });
         } else {
-            
             const result = await devices.findOneAndUpdate(
                 { ipAddress: ip }, 
                 { $set: { ipAddress: newIp, name: name } }, 
                 { new: true } 
             );
-
             if (!result) {
                 return res.status(404).send('Device not found');
             }
-
             return res.send({ ip: newIp, name });
         }
     } catch (err) {

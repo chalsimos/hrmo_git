@@ -138,16 +138,16 @@
           <select name="campus" class="form-control" required>
             <option value="" disabled selected>Select Campus</option>
             <% if (user.role === 'admin') { %>
-              <option value="Bongabong">Bongabong</option>
-              <option value="Calapan">Calapan</option>
-              <option value="Main">Main</option>
+              <option value="bongabong">Bongabong</option>
+              <option value="calapan">Calapan</option>
+              <option value="main">Main</option>
               <% } %>
               <% if (user.campus === 'main') { %>
-                <option value="Main">Main</option>
+                <option value="main">Main</option>
               <% } else if (user.campus === 'Calapan') { %>
-                <option value="Calapan">Calapan</option>
+                <option value="calapan">Calapan</option>
               <% } else if (user.campus === 'bongabong') { %>
-                <option value="Bongabong">Bongabong</option>
+                <option value="bongabong">Bongabong</option>
               <% } %>
           </select>
 

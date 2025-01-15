@@ -46,6 +46,37 @@
     </div>
   <% }); %>
 </div>
+<button data-toggle="modal" class="btn btn-primary" data-target="#addevice">
+  add device
+</button>
+
+
+<div class="modal fade" id="addevice" tabindex="-1" role="dialog" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDeviceModalLabel">Register Device Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addDeviceForm">
+          <div class="form-group">
+            <label for="deviceIp">Current IP Address</label>
+            <input type="text" class="form-control" id="deviceIp">
+          </div>
+          
+          <div class="form-group">
+            <label for="deviceName">Device Name</label>
+            <input type="text" class="form-control" id="deviceName" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal for updating device info -->
 <div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
@@ -741,8 +772,31 @@
     $('#editDeviceModal').modal('show');
   }
 });
-
-// Example of sending the update request from the client side
+document.getElementById('addDeviceForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const ipAddress = document.getElementById('deviceIp').value;
+  const deviceName = document.getElementById('deviceName').value;
+  fetch('/add-device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ip: ipAddress, name: deviceName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ip && data.name) {
+            // Update the UI with the new values
+            const deviceBox = document.querySelector(`div[data-device-ip="${ipAddress}"]`);
+            deviceBox.querySelector('h3').textContent = newIpAddress; // Update IP in UI
+            deviceBox.querySelector('p').textContent = deviceName; // Update name in UI
+            $('#addevice').modal('hide');
+        } else {
+            alert('Error saving device information');
+        }
+    })
+    .catch(err => alert('Error updating device'));
+});
 document.getElementById('editDeviceForm').addEventListener('submit', function (e) {
     e.preventDefault();
 

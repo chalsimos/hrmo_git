@@ -56,17 +56,17 @@ app.get('/lock', (req, res) => {
   res.render('lock', {user});
 });
 
-app.post('/unlock', (req, res) => {
-  const { password } = req.body;
+// app.post('/unlock', (req, res) => {
+//   const { password } = req.body;
   
-  if (password === 'correctPassword') { 
-    req.session.isLocked = false; 
-    res.redirect('/main'); 
-  } else {
-    req.flash('error', 'Incorrect password. Try again.');
-    res.redirect('/lock'); 
-  }
-});
+//   if (password === 'correctPassword') { 
+//     req.session.isLocked = false; 
+//     res.redirect('/main'); 
+//   } else {
+//     req.flash('error', 'Incorrect password. Try again.');
+//     res.redirect('/lock'); 
+//   }
+// });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
