@@ -13,6 +13,7 @@ const absentSchema = new mongoose.Schema({
         //     message: "unable to insert saturday and sunday for absent"
         // }
     },
+    campus: {type:String, required:true},
 });
 absentSchema.index({empno:1,date:1}, {unique:true});
 

@@ -171,14 +171,31 @@
                               <th>Departure/Arrival</th>
                               <th>Location/Purpose</th>
                               <th>Date Filed</th>
+                              <th>Notes</th>
                                   </tr>
                               </thead>
                               <tbody>
                                    <% completed.forEach(e =>{ %>
                               <tr>
+                                
                                 <td><%= e.locatorNo %></td>
                                 <td><%= e.empname %></td>
-                                <td><%= e.departure %> - <%= e.arrival %></td>
+                                <td>
+                                  <% 
+                                  function getTimeDiff(dateCompleted, departure) {
+                                    const completedDate = new Date(dateCompleted);
+                                    const datePart = completedDate.toISOString().split('T')[0]; // Extract date portion
+                                    const departureDateTime = new Date(`${datePart}T${departure}:00+08:00`); // Append time and timezone (UTC+8)
+                                    const timeDifference = departureDateTime - completedDate;
+                                    const absTimeDifference = Math.abs(timeDifference); // Avoid negative values
+                                    const hours = Math.floor(absTimeDifference / (1000 * 60 * 60));
+                                    const minutes = Math.floor((absTimeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                                    const prefix = timeDifference < 0 ? "Late by" : "Early by";
+                                    return `${prefix} ${hours} hours, ${minutes} minutes`;
+                                  }
+                                %>
+                                <%= e.departure %> - <%= e.arrival %>
+                                </td>
                                 <td>
                                   <ul>
                                     <li><%= e.location %></li>
@@ -186,6 +203,7 @@
                                   </ul>
                                    </td>
                                    <td><%= e.createdAt %></td>
+                                   <td><p><%= getTimeDiff(e.dateCompleted, e.arrival) %></p></td>
                               </tr>
                               <% }) %>
                               </tbody>
@@ -231,7 +249,7 @@
         </div>
         <div class="modal-body">
           <form action="/save-endcoded" method="post">
-            <label>Quantity</label>
+            <label>Locator Number</label>
             <input type="number" class="form-control" name="locatorNo" placeholder="enter locator ID no.">
             <label>Employee Name</label>
             <input type="text" id="employeeName" class="form-control" name="empname" placeholder="Enter employee name" autocomplete="off">

@@ -9,6 +9,8 @@ const timeSchema = new mongoose.Schema({
     pm_time_out: { type: String},
     ot_time_in: { type: String},
     ot_time_out: { type: String},
-    
+    status: { type: String }, // To store "on-travel" or "holiday"
+    modifiedBy: { type: String }, // Name of the user who modified the record
+
 });
 module.exports = mongoose.model('time', timeSchema);

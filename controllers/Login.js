@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const bcrypt = require('bcrypt'); // For password hashing
-const session = require('express-session'); // To manage sessions
+const bcrypt = require('bcrypt'); 
+const session = require('express-session'); 
 
 
 const main ={

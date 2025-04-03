@@ -49,34 +49,58 @@
                                                 </div>
                                                 <div class="card-body">
                                                     <form action="/update-time" method="post">
-                                                    <div id="external-events">
-                                                        <div class="form-group">
-                                                            <label for="amTimeIn">AM Time In:</label>
-                                                            <input type="text" id="amTimeIn" class="form-control" placeholder="AM Time In" readonly>
+                                                        <div id="external-events">
+                                                            <!-- Add a hidden input for empno -->
+                                                            <input type="text" id="empno" name="empno" value="" readonly>
+                                                    
+                                                            <!-- Add a visible input for the clicked date -->
+                                                            <div class="form-group">
+                                                                <label for="selectedDate">Selected Date:</label>
+                                                                <input type="text" id="selectedDate" name="selectedDate" class="form-control" placeholder="Selected Date" readonly>
+                                                            </div>
+                                                    
+                                                            <!-- Existing fields -->
+                                                            <div class="form-group">
+                                                                <label for="amTimeIn">AM Time In:</label>
+                                                                <input type="text" id="amTimeIn" class="form-control" placeholder="AM Time In" readonly>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="amTimeOut">AM Time Out:</label>
+                                                                <input type="text" id="amTimeOut" name="amTimeOut" class="form-control" placeholder="AM Time Out">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="pmTimeIn">PM Time In:</label>
+                                                                <input type="text" id="pmTimeIn" name="pmTimeIn" class="form-control" placeholder="PM Time In">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="pmTimeOut">PM Time Out:</label>
+                                                                <input type="text" id="pmTimeOut" name="pmTimeOut" class="form-control" placeholder="PM Time Out">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="embedID">Record ID:</label>
+                                                                <input type="text" id="embedID" name="embedID" class="form-control" placeholder="Embed ID" readonly>
+                                                            </div>
+                                                            <div id="noEventOptions" style="display: none;">
+                                                                <div class="form-group">
+                                                                    <label>Select Option:</label>
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="radio" name="eventType" id="holidayRadio" value="holiday">
+                                                                        <label class="form-check-label" for="holidayRadio">Holiday</label>
+                                                                    </div>
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="radio" name="eventType" id="travelOrderRadio" value="travelOrder">
+                                                                        <label class="form-check-label" for="travelOrderRadio">Travel Order</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="checkbox">
+                                                                <label for="drop-remove">
+                                                                    <button type="submit" class="btn btn-primary">Update</button>
+                                                                </label>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group">
-                                                            <label for="amTimeOut">AM Time Out:</label>
-                                                            <input type="text" id="amTimeOut" name="amTimeOut" class="form-control" placeholder="AM Time Out" >
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="pmTimeIn">PM Time In:</label>
-                                                            <input type="text" id="pmTimeIn" name="pmTimeIn" class="form-control" placeholder="PM Time In" >
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="pmTimeOut">PM Time Out:</label>
-                                                            <input type="text" id="pmTimeOut" name="pmTimeOut" class="form-control" placeholder="PM Time Out" >
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="embedID">Record ID:</label>
-                                                            <input type="text" id="embedID" name="embedID" class="form-control" placeholder="Embed ID" readonly>
-                                                        </div>
-                                                        <div class="checkbox">
-                                                            <label for="drop-remove">
-                                                                <button type="submit" class="btn btn-primary">update</button>
-                                                            </label>
-                                                        </div>
-                                                      </form>
-                                                    </div>
+                                                    </form>
+                                                    
                                                 </div>
                                             </div>
 
@@ -97,43 +121,102 @@
             
             <%- include('../partials/end') %>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
+  document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
 
-            
-            var year = <%- JSON.stringify(data.year) %>;  
-            var month = <%- JSON.stringify(data.month) %>; 
+    // Extract empno from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const empno = urlParams.get('empno'); // Get the 'empno' parameter from the URL
 
-            
-            var initialDate = new Date(year, month - 1, 1); 
+    // Set the empno value in the hidden input field
+    document.getElementById('empno').value = empno;
 
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialDate: initialDate, 
-                initialView: 'dayGridMonth', 
-                events: <%- JSON.stringify(data.events) %>, 
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek'
-                },
-                eventContent: function(arg) {
-                    
-                    return {
-                        html: `${arg.event.extendedProps.amTimeIn}<br>${arg.event.extendedProps.amTimeOut}<br>${arg.event.extendedProps.pmTimeIn}<br>${arg.event.extendedProps.pmTimeOut}`
-                    };
-                },
-                eventClick: function(info) {
-                    
-                    document.getElementById('amTimeIn').value = info.event.extendedProps.amTimeIn;
-                    document.getElementById('amTimeOut').value = info.event.extendedProps.amTimeOut;
-                    document.getElementById('pmTimeIn').value = info.event.extendedProps.pmTimeIn;
-                    document.getElementById('pmTimeOut').value = info.event.extendedProps.pmTimeOut;
-                    document.getElementById('embedID').value = info.event.extendedProps.embedID;
-                    
-                    
-                }
-            });
+    // Initialize FullCalendar
+    var year = <%- JSON.stringify(data.year) %>;
+    var month = <%- JSON.stringify(data.month) %>;
+    var initialDate = new Date(year, month - 1, 1);
 
-            calendar.render();  
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialDate: initialDate,
+        initialView: 'dayGridMonth',
+        events: <%- JSON.stringify(data.events) %>,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+        },
+        eventContent: function (arg) {
+            return {
+                html: `${arg.event.extendedProps.amTimeIn}<br>${arg.event.extendedProps.amTimeOut}<br>${arg.event.extendedProps.pmTimeIn}<br>${arg.event.extendedProps.pmTimeOut}`
+            };
+        },
+        dateClick: function (info) {
+    const clickedDate = info.dateStr; // Format: YYYY-MM-DD
+    document.getElementById('selectedDate').value = clickedDate;
+
+    // Check if the clicked date is a weekend (Saturday or Sunday)
+    const dateObj = new Date(clickedDate);
+    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+    // Clear all fields initially
+    document.getElementById('amTimeIn').value = '';
+    document.getElementById('amTimeOut').value = '';
+    document.getElementById('pmTimeIn').value = '';
+    document.getElementById('pmTimeOut').value = '';
+    document.getElementById('embedID').value = '';
+
+    // Find events that exactly match the clicked date
+    const eventsOnDate = calendar.getEvents().filter(event => {
+        // Compare dates as strings to ensure exact match
+        const eventDate = event.startStr.split('T')[0];
+        return eventDate === clickedDate;
+    });
+
+    console.log("Clicked Date:", clickedDate);
+    console.log("Events on Date:", eventsOnDate);
+    console.log("Is Weekend:", isWeekend);
+
+    if (eventsOnDate.length === 0 && !isWeekend) {
+        console.log("No events found and not a weekend. Showing radio buttons.");
+        document.getElementById('noEventOptions').style.display = 'block';
+        
+        // Uncheck any previously selected radio buttons
+        document.querySelectorAll('input[name="eventType"]').forEach(radio => {
+            radio.checked = false;
         });
+    } else {
+        console.log("Either events found or it's a weekend. Hiding radio buttons.");
+        document.getElementById('noEventOptions').style.display = 'none';
+
+        // If there are events, populate the first event's details
+        if (eventsOnDate.length > 0) {
+            const event = eventsOnDate[0];
+            document.getElementById('amTimeIn').value = event.extendedProps.amTimeIn || '';
+            document.getElementById('amTimeOut').value = event.extendedProps.amTimeOut || '';
+            document.getElementById('pmTimeIn').value = event.extendedProps.pmTimeIn || '';
+            document.getElementById('pmTimeOut').value = event.extendedProps.pmTimeOut || '';
+            document.getElementById('embedID').value = event.extendedProps.embedID || '';
+        }
+    }
+},
+        eventClick: function (info) {
+            // Populate the event details into the form fields
+            document.getElementById('amTimeIn').value = info.event.extendedProps.amTimeIn || '';
+            document.getElementById('amTimeOut').value = info.event.extendedProps.amTimeOut || '';
+            document.getElementById('pmTimeIn').value = info.event.extendedProps.pmTimeIn || '';
+            document.getElementById('pmTimeOut').value = info.event.extendedProps.pmTimeOut || '';
+            document.getElementById('embedID').value = info.event.extendedProps.embedID || '';
+
+            // Populate the event date into the date input field
+            const eventDate = info.event.start.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            document.getElementById('selectedDate').value = eventDate;
+
+            // Hide the radio buttons
+            document.getElementById('noEventOptions').style.display = 'none';
+        }
+    });
+
+    calendar.render();
+});
 </script>

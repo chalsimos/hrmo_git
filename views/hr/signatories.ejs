@@ -17,60 +17,125 @@
                     </ol>
                   </div>
                 </div>
+                <button data-toggle="modal" class="btn btn-primary" data-target="#addsg">
+                  Add Signatories
+                </button>
               </div><!-- /.container-fluid -->
             </section>
       
-            <section class="content">
-              <div class="container-fluid">
-                <div class="row">
-                  <div class="card card-success">
-                    <div class="card-header">
-                      <h3 class="card-title">Register new Signatories</h3>
-                    </div>
-                    <form  action="/addsignatory" method="POST">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-4">
-                          <label for="lastname">Complete Name</label>
-                          <input type="text" class="form-control" placeholder="Last Name" name="name" required>
+              
+
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">PERMANENT</h3>
                         </div>
-                        <div class="col-8">
-                            <label for="position">position</label>
-                            <select name="position" class="form-control">
-                                <option value="Campus Executive Director">Campus Executive Director</option>
-                            </select>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                          <table id="admin" class="table table-bordered table-striped">
+                            <thead>
+                              <tr>
+                                <th>Complete Name</th>
+                                <th>Position</th>
+                                <th>Campus</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.sign.forEach(employee => { %>
+                                <tr>
+                                  <td><%= employee.name %></td>
+                                  <td>
+                                    <%= employee.position %>
+                                  </td>
+                                  <td><%= employee.campus %></td>
+                                  <td>
+                                 <%= employee.status %>
+                                  </td>
+                                </tr>
+                              <% }); %>
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <th>Complete Name</th>
+                                <th>Position</th>
+                                <th>Campus</th>
+                                <th>Status</th>
+                              </tr>
+                            </tfoot>
+                          </table>
+              
+                          
+              
+                          <div class="modal fade" id="addsg" tabindex="-1" role="dialog" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="editDeviceModalLabel">Add Signatories </h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                  <form  action="/addsignatory" method="POST">
+                                    <div class="card-body">
+                                      <div class="row">
+                                        <div class="col-4">
+                                          <label for="lastname">Complete Name</label>
+                                          <input type="text" class="form-control" placeholder="Last Name" name="name" required>
+                                        </div>
+                                        <div class="col-8">
+                                            <label for="position">position</label>
+                                            <select name="position" class="form-control">
+                                                <option value="Campus Executive Director">Campus Executive Director</option>
+                                            </select>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-md-6">
+                                          <label>Status</label>
+                                          <select class="form-control" name="status" required>
+                                            <option value="active">ACTIVE</option>
+                                            <option value="inactive">INACTIVE</option>
+                                          </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                          <label>Campus</label>
+                                          <select class="form-control" name="campus" required>
+                                            <% if(data.cmp.role === 'admin' || data.cmp.role === 'chief'){ %>
+                                              <option value="calapan">CALAPAN</option>
+                                              <option value="main">MAIN</option>
+                                              <option value="bongabong">BONGABONG</option>
+                                              <% }else {  %>  
+                                              <option value="<%= data.cmp.campus %>"><%= data.cmp.campus %></option>
+                                            <%}%>
+                                          </select>
+                                        </div>
+                                      </div>
+                      
+                                    </div>
+                                    <!-- /.card-body -->
+                      
+                                    <div class="card-footer">
+                                      <button type="submit" class="btn btn-primary">Submit</button>
+                                    </div>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>              
                         </div>
+                        <!-- /.card-body -->
                       </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <label>Status</label>
-                          <select class="form-control" name="status" required>
-                            <option value="active">ACTIVE</option>
-                            <option value="inactive">INACTIVE</option>
-                          </select>
-                        </div>
-                        <div class="col-md-6">
-                          <label>Campus</label>
-                          <select class="form-control" name="campus" required>
-                            <option value="calapan">CALAPAN</option>
-                            <option value="main">MAIN</option>
-                            <option value="bongabong">BONGABONG</option>
-                          </select>
-                        </div>
-                      </div>
-      
                     </div>
-                    <!-- /.card-body -->
-      
-                    <div class="card-footer">
-                      <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                  </form>
-      
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
+
+            
           </div>
         </div>
         <%- include('../partials/end') %>

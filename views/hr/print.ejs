@@ -1,196 +1,212 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title><%= month %> - <%= year %></title>
-   <style>
-  @media print {
-    #page-footer {
-      display: none;
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title><%= month %> - <%= year %></title>
+    <style>
+    @media print {
+      #page-footer {
+        display: none;
+      }
     }
-  }
-  @page {
-    /* size: 105mm 297.4mm; */
-    size: 8.5in 13in;
-  }
-  body {
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 0.5fr 0.5fr;
-    height: auto;
-  }
-  .column{
-    padding: 10px;
-  }
-  table {
-    border-collapse: collapse;
-    border: 1px solid black;
-    table-layout: fixed;
-    width: 100%;
-  }
-  td.dotted{
-    border: 1px dotted black;
-  }
-  .dotted-line {
-    border-style: dotted;
-    border-width: 1px;
-    border-color: #ccc;
-  }
-  hr {
-    border: none;
-    border-top: 1px solid;
-    height: 1px;
-    margin-top: 1px;
-    margin-bottom: 5px;
-  }
-  .fth{
-    width:30px;
-  }
-  .line {
-      border-top: 1px solid black;
-      width: 50%;
-      margin: 0 auto;
+    @page {
+      /* size: 105mm 297.4mm; */
+      size: 8.5in 13in;
     }
-  </style>
-</head>
-<body>
-  <% 
-    let totalLateMinutes = 0; 
-    const one = ["01", "03", "05", "07", "08", "10", "12"];
-    const num = one.includes(month) ? 31 : 30;
+    body {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 0.5fr 0.5fr;
+      height: auto;
+    }
+    .column{
+      padding: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      table-layout: fixed;
+      width: 100%;
+    }
+    td.dotted{
+      border: 1px dotted black;
+    }
+    .dotted-line {
+      border-style: dotted;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid;
+      height: 1px;
+      margin-top: 1px;
+      margin-bottom: 5px;
+    }
+    .fth{
+      width:30px;
+    }
+    .line {
+        border-top: 1px solid black;
+        width: 50%;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <% 
+      let totalLateMinutes = 0; 
+      const one = ["01", "03", "05", "07", "08", "10", "12"];
+      const num = one.includes(month) ? 31 : 30;
 
-    employees.forEach(employee => {
-      let lateMinutes1to10 = 0;
-      let lateMinutes11to25 = 0;
-      let lateMinutes26to31 = 0;
-  %>
-    <div class="column">
-      <p>
-        Civil Service Form No. 48 &emsp;&emsp;Card No. <%= employee.empno %>
-      </p>
-      <div style="text-align: center;">
-        <h3>DAILY TIME RECORD</h3>
-        <b>
-          <%= employee.lname.toUpperCase() %>, <%= employee.fname.toUpperCase() %>
-          <%= employee.mname ? employee.mname[0].toUpperCase() : '' %>
-        </b>
-        <hr>
-        <p>(NAME)</p>
-        <b><%= employee.area.toUpperCase() %></b>
-        <hr>
-        <p>(DIVISION)</p>
-      </div>
-      <p>
-        For the month of <u><%= month %> <%= year %></u><br>
-        Official hours for arrival and departure:
-      </p>
-      <table>
-        <tr>
-          <th rowspan="2" class="fth">Day</th>
-          <th colspan="2">A.M.</th>
-          <th colspan="2">P.M.</th>
-          <th colspan="2">Undertime</th>
-        </tr>
-        <tr>
-          <td>Arrival</td>
-          <td>Departure</td>
-          <td>Arrival</td>
-          <td>Departure</td>
-          <td>Hours</td>
-          <td>Minutes</td>
-        </tr>
-        <% 
-        let employeeTotalLateMinutes = 0;
-        for (let i = 1; i <= num; i++) {
-          const date = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-          let hasData = false;
-          let lateHours = 0;
-          let lateMinutes = 0;
+      employees.forEach(employee => {
+        let lateMinutes1to10 = 0;
+        let lateMinutes11to25 = 0;
+        let lateMinutes26to31 = 0;
+    %>
+      <div class="column">
+        <p>
+          Civil Service Form No. 48 &emsp;&emsp;Card No. <%= employee.empno %>
+        </p>
+        <div style="text-align: center;">
+          <h3>DAILY TIME RECORD</h3>
+          <b>
+            
+            <%= employee.lname.toUpperCase() %>, <%= employee.fname.toUpperCase() %>
+            <%= employee.mname ? employee.mname[0].toUpperCase() : '' %>
+          </b>
+          <hr>
+          <p>(NAME)</p>
+          <b><%= employee.area.toUpperCase() %></b>
+          <hr>
+          <p>(DIVISION)</p>
+        </div>
+        <p>
+          For the month of <u><%= month %> <%= year %></u><br>
+          Official hours for arrival and departure:
+        </p>
+        <table>
+          <tr>
+            <th rowspan="2" class="fth">Day</th>
+            <th colspan="2">A.M.</th>
+            <th colspan="2">P.M.</th>
+            <th colspan="2">Undertime</th>
+          </tr>
+          <tr>
+            <td>Arrival</td>
+            <td>Departure</td>
+            <td>Arrival</td>
+            <td>Departure</td>
+            <td>Hours</td>
+            <td>Minutes</td>
+          </tr>
+          <% 
+          let employeeTotalLateMinutes = 0;
+          for (let i = 1; i <= num; i++) {
+            const date = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            let hasData = false;
+            let lateHours = 0;
+            let lateMinutes = 0;
 
-          const dayData = dataset.find(d => d.date === date && d.sid === employee.empno);
+            const dayData = dataset.find(d => d.date === date && d.sid === employee.empno);
 
-          if (dayData) {
-            hasData = true;
+            if (dayData) {
+              hasData = true;
 
-            // Log the date with records
-            <!-- console.log(`Record Found - Employee: ${employee.empno}, Date: ${dayData.date}`); -->
+              // Log the date with records
+              console.log(`Record Found - Employee: ${employee.empno}, Date: ${dayData.date}`);
 
-            if (dayData.am_time_in) {
-              const scheduledTime = new Date('1970-01-01T08:00:00');
+              if (dayData.am_time_in) {
+                let scheduledTime;
+              if (!employee.schedule) {
+                scheduledTime = new Date('1970-01-01T08:00:00');
+              } else if (employee.schedule === '7AM') {
+                scheduledTime = new Date('1970-01-01T07:00:00');
+              } else if (employee.schedule === '9AM') {
+                scheduledTime = new Date('1970-01-01T09:00:00');
+              } else {
+                scheduledTime = new Date('1970-01-01T08:00:00');
+              }
               const actualTimeIn = new Date('1970-01-01T' + dayData.am_time_in);
+                if (actualTimeIn > scheduledTime) {
+                  const interval = actualTimeIn - scheduledTime;
+                  lateHours = Math.floor(interval / 3600000);
+                  lateMinutes = Math.floor((interval % 3600000) / 60000);
+                  employeeTotalLateMinutes += lateMinutes;
 
-              if (actualTimeIn > scheduledTime) {
-                const interval = actualTimeIn - scheduledTime;
-                lateHours = Math.floor(interval / 3600000);
-                lateMinutes = Math.floor((interval % 3600000) / 60000);
-                employeeTotalLateMinutes += lateMinutes;
-
-                if (i >= 1 && i <= 10) {
-                  lateMinutes1to10 += lateMinutes;
-                } else if (i >= 11 && i <= 25) {
-                  lateMinutes11to25 += lateMinutes;
-                } else if (i >= 26 && i <= 31) {
-                  lateMinutes26to31 += lateMinutes;
+                  if (i >= 1 && i <= 10) {
+                    lateMinutes1to10 += lateMinutes;
+                  } else if (i >= 11 && i <= 25) {
+                    lateMinutes11to25 += lateMinutes;
+                  } else if (i >= 26 && i <= 31) {
+                    lateMinutes26to31 += lateMinutes;
+                  }
                 }
               }
+            } else {
+              
+                <!-- console.log(`No Record - Employee: ${employee.empno}, Date: ${date}`); -->
+                <!-- now insert this record to absent model {empno: empno, date:date} -->
+              
             }
-          } else {
+          %>
+            <tr>
+              <td class="dotted">
+                <% 
+        const dayOfWeek = new Date(year, month - 1, i).getDay(); 
+      %>
+      <% if (dayOfWeek === 0 || dayOfWeek === 6) { %>
+        <b><%= i %></b>
+      <% } else { %>
+        <%= i %>
+      <% } %>
+              </td>
+              <% if (hasData) { %>
+                
+                <td class="dotted"><%= dayData.am_time_in || '0' %></td>
+                <td class="dotted"><%= dayData.am_time_out || '0' %></td>
+                <td class="dotted"><%= dayData.pm_time_in || '0' %></td>
+                <td class="dotted"><%= dayData.pm_time_out || '0' %></td>
+                <td class="dotted"><%= lateHours %></td>
+                <td class="dotted"><%= lateMinutes %></td>
+              <% } else { %>
+                
+                <td class="dotted"></td>
+                <td class="dotted"></td>
+                <td class="dotted"></td>
+                <td class="dotted"></td>
+                <td class="dotted"></td>
+                <td class="dotted"></td>
+              <% } %>
+            </tr>
+          <% } %>
+          
+          <% totalLateMinutes += employeeTotalLateMinutes; %>
+          <% const deduct = 30780 /22 / 8 / 60 * employeeTotalLateMinutes;  
+          const formattedNumber = deduct.toFixed(2); %>
+          26 - 31 m:<b><%= lateMinutes26to31 %>;</b>
+          1 - 10 m:<b><%= lateMinutes1to10 %>;</b>
+          11 - 25 m:<b><%= lateMinutes11to25 %></b>
             
-              <!-- console.log(`No Record - Employee: ${employee.empno}, Date: ${date}`); -->
-              <!-- now insert this record to absent model {empno: empno, date:date} -->
-            
-          }
-        %>
-          <tr>
-            <td class="dotted">
-               <% 
-      const dayOfWeek = new Date(year, month - 1, i).getDay(); 
-    %>
-    <% if (dayOfWeek === 0 || dayOfWeek === 6) { %>
-      <b><%= i %></b>
-    <% } else { %>
-      <%= i %>
-    <% } %>
-            </td>
-            <% if (hasData) { %>
-              
-              <td class="dotted"><%= dayData.am_time_in || '0' %></td>
-              <td class="dotted"><%= dayData.am_time_out || '0' %></td>
-              <td class="dotted"><%= dayData.pm_time_in || '0' %></td>
-              <td class="dotted"><%= dayData.pm_time_out || '0' %></td>
-              <td class="dotted"><%= lateHours %></td>
-              <td class="dotted"><%= lateMinutes %></td>
-            <% } else { %>
-              
-              <td class="dotted"></td>
-              <td class="dotted"></td>
-              <td class="dotted"></td>
-              <td class="dotted"></td>
-              <td class="dotted"></td>
-              <td class="dotted"></td>
-            <% } %>
-          </tr>
-        <% } %>
-        <% totalLateMinutes += employeeTotalLateMinutes; %>
-        
-      </table>
-      <p>
-        I certify on my honor that the above is a true and correct report of the hours of work performed, recorded daily.
-      </p>
-      <p>
-        <u>______________________________________________</u><br>
-        (Employee's Signature)
-      </p>
-      <p>
-        Verified as to the prescribed office hours:<br><br>
-        <center>
-        <u>______________________________________________</u><br>
-        <b><%= signatory.name.toUpperCase() %></b><br>
-        <i><%= signatory.position.toUpperCase() %></i>
-        </center>
-      </p>
-    </div>
-  <% }); %>
-</body>
-</html>
+          
+        </table>
+        <p>
+          I certify on my honor that the above is a true and correct report of the hours of work performed, recorded daily.
+        </p>
+        <p>
+          <u>______________________________________________</u><br>
+          (Employee's Signature)
+        </p>
+        <p>
+          Verified as to the prescribed office hours:<br><br>
+          <center>
+          <u>______________________________________________</u><br>
+          <b><%= signatory.name.toUpperCase() %></b><br>
+          <i><%= signatory.position.toUpperCase() %></i>
+          </center>
+        </p>
+      </div>
+    <% }); %>
+  </body>
+  </html>

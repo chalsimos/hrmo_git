@@ -5,6 +5,29 @@ const { roleAuth } = require('../middleware/authMiddleware');
 const bookController = require("../controllers/bookController");
 const cashierController = require("../controllers/cashierController")
 const generalController = require("../controllers/generalController");
+const { sendNotifications } = require('../controllers/NotificationController');
+const AccountingController = require('../controllers/AccountingController');
+
+router.get('/notification' , generalController.postNotif);
+router.post('/send-notifications', async (req, res) => {
+  try {
+    const { title, body, url } = req.body;
+    await sendNotifications(req, res); 
+    if (!res.headersSent) {
+      return res.status(200).json({ message: 'Notifications sent successfully.' });
+    }
+  } catch (error) {
+    console.error('Error processing form:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: 'Error sending notifications.', error: error.message });
+    }
+  }
+});
+// accounting panel
+
+router.get('/acct/ex-payroll',roleAuth(['admin', 'accounting']), AccountingController.payroll);
+router.get('/acct', AccountingController.index);
+router.post('/validate-password', authController.validate);
 router.post("/unlock", authController.unlock);
 router.get("/check-device", generalController.getDeviceInfo);
 router.post("/update-device", generalController.updateDevice);
@@ -17,7 +40,7 @@ router.get("/employees", roleAuth(['admin', 'hr']),  bookController.employees);
 router.get("/modify-information/:id", roleAuth(['admin', 'hr']), bookController.modifyEmployee);
 router.post("/modify-employee/:id", roleAuth(['admin', 'hr']), bookController.modify_employee);
 
-
+router.get('/hr/payroll', roleAuth(['admin', 'hr']), cashierController.hrPayroll);
 router.get('/find-employee', bookController.findEmployee);
 router.post('/save-endcoded', bookController.saveEncoded);
 router.get('/locator-validator', bookController.locatorValidator);

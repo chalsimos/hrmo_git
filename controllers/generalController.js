@@ -8,6 +8,9 @@ const zkConfig = {
   inport: 5200, 
 };
 const gen = {
+  postNotif: async(req, res) =>{
+    res.render("hr/notification");
+  },
     getAttendance: async(req, res) =>{
       const ip = req.params.id;
       const zkInstance = new ZKLib(ip, zkConfig.port, zkConfig.timeout);
@@ -61,7 +64,7 @@ const gen = {
       }
     }
 
-    // Handle incomplete records and set them to "-"
+    
     const incompleteRecords = await Time.find({
       $or: [
         { am_time_out: null },
@@ -96,7 +99,7 @@ const gen = {
       }
     }
 
-    // Optional: Handle any specific condition for deleting a record (e.g., half day condition)
+    
     if (req.body.uptype === "half") {
       const latestRecord = await Time.findOne().sort({ date: -1 });
       if (latestRecord) {

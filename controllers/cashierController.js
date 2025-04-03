@@ -12,9 +12,12 @@ const firebaseConfig = {
   messagingSenderId: "338350609658",
   appId: "1:338350609658:web:cf2c90c6389f2a5fe62543",
 };
+const Absent = require('../models/absent');
 const Book = require("../models/Book");
 const TModel = require("../models/Time");
 const employee = require("../models/Employee");
+const devices = require('../models/devices');
+const lateentry = require('../models/lateEntry');
 const signatories = require("../models/signatories");
 const salary = require("../models/salary");
 const srecord = require("../models/ServiceRecord");
@@ -73,6 +76,84 @@ for (let year = 2019; year <= currentYear; year++) {
   years.unshift(year);
 }
 const cashier = {
+  
+  hrPayroll: async (req, res) => {
+      const user = req.session.user || null;
+      const { month, year } = req.query;
+  
+      // Parse month and year from query parameters
+      const y = parseInt(year, 10);
+      const monthIndex = parseInt(month, 10) - 1;    
+      const startDateStr = `${y}-${('0' + (monthIndex + 1)).slice(-2)}-01`;
+      const lastDay = new Date(y, monthIndex + 1, 0).getDate();
+      const endDateStr = `${y}-${('0' + (monthIndex + 1)).slice(-2)}-${('0' + lastDay).slice(-2)}`;
+  
+      // Fetch late entries (if needed)
+      const lateEntries = await lateentry.aggregate([
+          {
+              $match: {
+                  date: { $gte: startDateStr, $lte: endDateStr },
+                  campus: user.campus,
+              }
+          },
+          {
+              $addFields: { 
+                  totalLateMinutesInt: { $toInt: "$totalLateMinutes" } 
+              }
+          },
+          {
+              $group: {
+                  _id: "$empno",
+                  totalLateMinutes: { $sum: "$totalLateMinutesInt" }
+              }
+          }
+      ]);
+  
+      // Fetch absence records for the specified month and year
+      const absences = await Absent.aggregate([
+          {
+              $match: {
+                  date: { $gte: startDateStr, $lte: endDateStr }, // Match dates within the range
+                  campus: user.campus,
+              }
+          },
+          {
+              $group: {
+                  _id: "$empno",                                  // Group by employee ID
+                  absencesCount: { $sum: 1 },                    // Count the number of absences
+                  absenceDates: { $push: "$date" }              // Collect the dates of absences
+              }
+          }
+      ]);
+  
+      
+      const data = {
+          permanent: await Payroll.find({ type: "PERMANENT", month:month, year:year }),
+          cos: await Payroll.find({ type: "COS", month:month, year:year }),
+          jobOrder: await Payroll.find({ type: "Job Order" , month:month, year:year}),
+          position: await positionModel.find(),
+          devices: await devices.find({ campus: user.campus }),
+          serviceRecords: await srecord.find().sort({ employee_id: 1, date_from: -1 }),
+          lateEntries,                                          // Pass late entries
+          absences                                              // Pass absences data
+      };
+      
+      res.render('hr/payroll', { 
+          months, 
+          years, 
+          month, 
+          year, 
+          user, 
+          data,
+          helpers: {
+              formatNumber: (num) => num ? Number(num).toLocaleString() : 'N/A',
+              formatCurrency: (num) => num ? Number(num).toLocaleString('en-PH', {
+                  style: 'currency',
+                  currency: 'PHP'
+              }) : 'N/A'
+          } 
+      });
+  },
   payrollEmployee :async(req, res) =>{
     const id = req.params.id;
     const data = {
@@ -149,9 +230,49 @@ const cashier = {
       res.status(500).send("An error occurred while adding the deduction.");
     }
   },
+ upDeduction: async (req, res) => {
+  upload.single("file")(req, res, async (err) => {
+    if (err) {
+      return res.status(400).send({ error: "File upload error", details: err.message });
+    }
+
+    try {
+      if (!req.file) {
+        return res.status(400).send({ error: "No file provided" });
+      }
+
+      const filePath = req.file.path;
+      const data = [];
+
+      fs.createReadStream(filePath)
+        .pipe(csvParser())
+        .on("data", (row) => {
+          data.push(row);
+        })
+        .on("end", async () => {
+          try {
+            await deduct.insertMany(data);
+            fs.unlinkSync(filePath);
+            res.status(200).send({ message: "CSV data uploaded successfully" });
+          } catch (dbError) {
+            fs.unlinkSync(filePath);
+            res.status(500).send({ error: "Database error", details: dbError.message });
+          }
+        })
+        .on("error", (csvError) => {
+          fs.unlinkSync(filePath);
+          res.status(500).send({ error: "Error parsing CSV", details: csvError.message });
+        });
+    } catch (error) {
+      res.status(500).send({ error: "Error processing file", details: error.message });
+    }
+  });
+},
+
  deduction: async (req, res) => {
+  const user = req.session.user || null;
   try {
-    const employees = await employee.find().lean();
+    const employees = await employee.find({campus:user.campus}).lean();
     const deductions = await deduct.find().lean();
 
     employees.forEach(employee => {

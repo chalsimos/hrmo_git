@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const ping = require("ping");
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -10,15 +11,23 @@ const app = express();
 const port = 3000;
 
 
-mongoose.connect('mongodb://localhost:27017/hrmo', {
+
+
+mongoose.connect(  'mongodb+srv://krizchan31:uQTLHq325t%2Dky2b@cluster0.ws7un.mongodb.net/hrmo?retryWrites=true&w=majority',{
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+// mongoose.connect('mongodb://localhost:27017/hrmo', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
 
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));  // <-- Add this
 app.use(express.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
+// app.use(express.json());
 app.set('view engine', 'ejs');
 
 

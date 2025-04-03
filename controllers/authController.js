@@ -1,30 +1,93 @@
-// controllers/authController.js
+
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const Payroll = require("../models/PayrolModel");
 
 exports.regView = (req, res) =>{
   const user = req.session.user || null;
   res.render('register', { error: null, user });
 };
-exports.unlock =async (req, res) =>{
+exports.validate = async(req, res) =>{
+  const { password, year, month } = req.body;
+
+  try {
+    // Step 1: Validate the user's session
+    const userId = req.session.user?._id;
+
+    if (!userId) {
+      return res.json({ success: false, message: 'User not logged in.' });
+    }
+
+    // Step 2: Fetch the user from the database
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.json({ success: false, message: 'User not found.' });
+    }
+
+    // Step 3: Compare the provided password with the hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.json({ success: false, message: 'Incorrect password.' });
+    }
+
+    // Step 4: Update all matching payroll records
+    const filter = { year, month }; // Find records with the same year and month
+    const update = { pstatus: 'AP' }; // Update the pstatus field to "AP"
+
+    const result = await Payroll.updateMany(filter, update);
+
+    if (result.matchedCount === 0) {
+      return res.json({ success: false, message: 'No payroll records found for the given year and month.' });
+    }
+
+    res.json({ success: true, message: `${result.modifiedCount} payroll record(s) updated successfully.` });
+  } catch (error) {
+    console.error('Error updating payroll records:', error);
+    res.status(500).json({ success: false, message: 'An error occurred.' });
+  }
+ };
+
+exports.unlock = async (req, res) => {
   const { password } = req.body;
   const usr = req.session.user || null;
-  const counter = 0;
-  const email = usr.email;
-  const user = await User.findOne({ email });
-  try{
-    if (user && (await bcrypt.compare(password, usr.password))) {
-      req.session.isLocked = false; 
-          res.redirect('/main'); 
-    }else{
-      req.flash('error', 'Incorrect password. Try again.');
-    res.redirect('/lock'); 
-    }
-  }catch(error){
-    req.flash('error', 'Incorrect password. Try again.');
-    res.redirect('/lock'); 
+
+  
+  if (!usr || !usr.email) {
+    req.flash('error', 'User session not found. Please log in again.');
+    return res.redirect('/login');
   }
-},
+
+  const email = usr.email;
+
+  try {
+    
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      req.flash('error', 'User not found. Please log in again.');
+      return res.redirect('/');
+    }
+
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      
+      req.session.isLocked = false;
+      return res.redirect('/main'); 
+    } else {
+      
+      req.flash('error', 'Incorrect password. Please try again.');
+      return res.redirect('/lock');
+    }
+  } catch (error) {
+    console.error('Unlock error:', error);
+    req.flash('error', 'An error occurred while unlocking. Please try again.');
+    return res.redirect('/lock');
+  }
+};
 exports.register = async (req, res) => {
   const { name, email, password, passwordConfirm, campus, role } = req.body;
   const user = req.session.user || null;
@@ -47,7 +110,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10); // Encrypt password
+    const hashedPassword = await bcrypt.hash(password, 10); 
     const newUser = new User({ name, email, password: hashedPassword, campus, role });
     await newUser.save();
     res.redirect('/');
@@ -59,6 +122,7 @@ exports.register = async (req, res) => {
     }
   }
 };
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -66,18 +130,20 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
     
     if (user && (await bcrypt.compare(password, user.password))) {
-      // Store essential user data in the session
+      
       req.session.user = { _id: user._id, email: user.email, role: user.role, campus: user.campus };
       
-      // Redirect based on user role
+      
       if (user.role === 'cashier') {
         return res.redirect('/cashier');
       } else if (user.role === 'hr') {
         return res.redirect('/hr');
       } else if (user.role === 'chief') {
         return res.redirect('/chief');
+      }else if(user.role ==='accounting'){
+        return res.redirect('/acct');    
       }
-      return res.redirect('/main');  // Default redirect for unspecified roles
+      return res.redirect('/main');  
     } else {
       res.render('login', { error: 'Invalid email or password', user: null });
     }
