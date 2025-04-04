@@ -1,128 +1,173 @@
 <%- include('../partials/top') %>
 <body class="hold-transition sidebar-mini layout-fixed">
-    <div class="wrapper"> 
-        <%- include('../partials/nav') %>
-        <%- include('../partials/aside') %>
-        <div class="content-wrapper">
-            <section class="content-header">
-              <div class="container-fluid">
-                <div class="row mb-2">
-                  <div class="col-sm-6">
-                    <h1>General Form</h1>
-                  </div>
-                  <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                      <li class="breadcrumb-item"><a href="#">Home</a></li>
-                      <li class="breadcrumb-item active">General Form</li>
-                    </ol>
-                  </div>
-                </div>
-              </div><!-- /.container-fluid -->
-            </section>
-      
-            <section class="content">
-              <div class="container-fluid">
-                <div class="row">
-                  <div class="card card-success">
-                    <div class="card-header">
-                      <h3 class="card-title">Register new Employee</h3>
-                    </div>
-                    
-                    <form  action="/addemployee" method="POST">
-                    <div class="card-body">
-                    <% if (messages && messages.success) { %>
-                      <div class="alert alert-success">
-                        <%= messages.success %>
-                      </div>
-                    <% } %>
+  <div class="wrapper">
+    <%- include('../partials/nav') %> <%- include('../partials/aside') %>
+    <div class="content-wrapper">
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>General Form</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">General Form</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <!-- /.container-fluid -->
+      </section>
 
-                      <div class="row">
-                        <div class="col-4">
-                          <label for="lastname">lastname</label>
-                          <input type="text" class="form-control" placeholder="Last Name" name="lname" required>
-                        </div>
-                        <div class="col-4">
-                          <label for="FirstName">FirstName</label>
-                          <input type="text" class="form-control" placeholder="First Name" name="fname" required>
-                        </div>
-                        <div class="col-4">
-                          <label for="MiddleName">MiddleName</label>
-                          <input type="text" class="form-control" placeholder="Middle Name" name="mname" required>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-6">
-                          <label>Birthdate</label>
-                          <input type="date" name="birthdate" class="form-control"required>
-                        </div>
-                        <div class="col-6">
-                          <label>Birth Place</label>
-                          <input type="text" name="birthplace" class="form-control" placeholder="birthplace" required>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-4">
-                          <label>CATEGORY TYPE</label>
-                          <select class="form-control" name="cat_type" required>
-                            <!-- <option value="ADMIN">ADMIN</option>
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="card card-success">
+              <div class="card-header">
+                <h3 class="card-title">Register new Employee</h3>
+              </div>
+
+              <form
+                action="/addemployee"
+                method="POST"
+              >
+                <div class="card-body">
+                  <% if (messages && messages.success) { %>
+                  <div class="alert alert-success"><%= messages.success %></div>
+                  <% } %>
+
+                  <div class="row">
+                    <div class="col-4">
+                      <label for="lastname">lastname</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Last Name"
+                        name="lname"
+                        
+                        required
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label for="FirstName">FirstName</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="First Name"
+                        name="fname"
+                        
+                        required
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label for="MiddleName">MiddleName</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Middle Name"
+                        name="mname"
+                        
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-6">
+                      <label>Birthdate</label>
+                      <input
+                        type="date"
+                        name="birthdate"
+                        class="form-control"
+                        
+                        required
+                      />
+                    </div>
+                    <div class="col-6">
+                      <label>Birth Place</label>
+                      <input
+                        type="text"
+                        name="birthplace"
+                        class="form-control"
+                        placeholder="birthplace"
+                        
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label>CATEGORY TYPE</label>
+                      <select class="form-control" name="cat_type" required>
+                        <!-- <option value="ADMIN">ADMIN</option>
                             <option value="JOBORDER">JOB ORDER</option>
                             <option value="NONPERMANENT">NON-PERMANENT</option>
                             <option value="FACULTY">FACULTY</option> -->
-                            <option value="JOBORDER">JOBORDER</option>
-                            <option value="COS">COS</option>
-                            <option value="PERMANENT">PERMANENT</option>
-                          </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                          <label>AREA TYPE</label>
-                          <select class="form-control" name="area" required>
-                            <option value="FACULTY">FACULTY</option>
-                            <option value="ADMINAIDE">ADMINISTRATIVE AIDE</option>
-                            <option value="AO">ADMINISTRATIVE OFFICER</option>
-                          </select>
-                        </div>
+                        <option value="Job Order">JOB ORDER</option>
+                        <option value="COS">COS</option>
+                        <option value="PERMANENT">PERMANENT</option>
+                      </select>
+                    </div>
 
-                        <div class="col-md-4">
-                          <label>Employee ID</label>
-                          <input type="text" name="empno" class="form-control" required>
-                        </div>
-                      </div>
-                      <!-- <div class="row">
-                        <div class="col-md-4">
-                          <label>SG</label>
-                          <select name="sg" class="form-control">
-                            <% for (let i = 9; i <= 25;  i++){ %>
-                              <option value="<%= i %>"><%= i %></option>
-                            <% } %>
-                          </select>
-                        </div>
-                        <div class="col-md-4">
-                          <label for="tranc">tranch</label>
-                          <select name="tranch" class="form-control">
-                            <% for(let i = 1; i <= 8; i++){ %>
-                              <option value="<%= i %>"><%= i %></option>
-                            <% }%>
-                          </select>
-                        </div>
-                        <div class="col-md-4">
-                          <label>Amount</label>
-                            <input type="number" name="amount" placeholder="amount" class="form-control">
-                        </div>
-                      </div> -->
-      
+                    <div class="col-md-4">
+                      <label>AREA TYPE</label>
+                      <select class="form-control" name="area" required>
+                        <option value="FACULTY">FACULTY</option>
+                        <option value="Admin Aide">ADMINISTRATIVE AIDE</option>
+                        <option value="Admin Officer">ADMINISTRATIVE OFFICER</option>
+                      </select>
                     </div>
-                    <!-- /.card-body -->
-      
-                    <div class="card-footer">
-                      <button type="submit" class="btn btn-primary">Submit</button>
+
+                    <div class="col-md-4">
+                      <label>Employee ID</label>
+                      <input
+                        type="text"
+                        name="empno"
+                        
+                        class="form-control"
+                        required
+                      />
                     </div>
-                  </form>
-      
+                  </div>
+                  <!-- <div class="row">
+                    <div class="col-md-6">
+                      <label>Deductions [MANDATORY]</label>
+                      <select name="deduction" class="form-control">
+                        <option value="sss">SSS</option>
+                        <option value="philhealth">PhilHeath</option>
+                        <option value="pagibig">PagIbig</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label>Amounting Value</label>
+                      <input type="number" class="form-control" name="avalue" />
+                    </div>
+                  </div> -->
+                  <div class="row">
+                  <div class="col-md-6">
+                    <label>Schedule/Time</label> <a href="/help/flexitime">help</a>
+                    <select name="schedule" class="form-control">
+                      <option value="7AM">7:00 - 12:00 | 1:00 - 4:00</option>
+                    <option value="8AM">8:00 - 12:00 | 1:00 - 5:00</option>
+                    <option value="9AM">9:00 - 1:00 | 2:00 - 6:00</option>
+                    </select>
                   </div>
                 </div>
-              </div>
-            </section>
+                </div>
+                
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-        <%- include('../partials/end') %>
+      </section>
+
+      
+    </div>
+  </div>
+  <%- include('../partials/end') %>
+</body>
