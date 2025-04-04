@@ -1159,7 +1159,7 @@ const user = req.session.user || null;
     await signatory.save();
   },
   add_employee: async (req, res) => {
-    const cmp = r 
+   const r = req.session.user || null;
     try {
       const {
         lname,
@@ -1170,9 +1170,11 @@ const user = req.session.user || null;
         cat_type,
         area,
         empno,
+        schedule
       } = req.body;
+      
       const status = "active";
-      const campus = cmp.campus;
+      const campus = r.campus;
       const newEmployee = new employee({
         lname,
         fname,
@@ -1182,9 +1184,11 @@ const user = req.session.user || null;
         cat_type,
         area,
         empno,
+        schedule,
         status,
         campus,
       });
+      console.log(newEmployee);
       await newEmployee.save();
       const referrer = req.headers.referer;
       res.redirect(referrer);
