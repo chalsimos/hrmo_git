@@ -1,3 +1,23 @@
+/**
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ */
 const firebase = require("firebase/app");
 require("firebase/firestore");
 const mongoose = require('mongoose');
@@ -57,6 +77,16 @@ const fileFilter = (req, file, cb) => {
     cb(new Error("Only .dat files are allowed"), false);
   }
 };
+function computeTaxAuto(salary) {
+  const sal = parseFloat(salary);
+
+  if (sal <= 20833) return 0;
+  if (sal <= 33332) return ((sal - 20833) * 0.15).toFixed(2);
+  if (sal <= 66666) return (((sal - 33333) * 0.20) + 1875).toFixed(2);
+  if (sal <= 166666) return (((sal - 66667) * 0.25) + 8541.8).toFixed(2);
+  if (sal <= 666666) return (((sal - 166667) * 0.30) + 33541.8).toFixed(2);
+  return (((sal - 666667) * 0.35) + 183541.8).toFixed(2);
+}
 
 const upload = multer({
   storage: storage,
@@ -542,7 +572,18 @@ const user = req.session.user || null;
   }
 },
 
-
+  vFileLeave: async (req, res) => {
+    const { empno, name, leaveFrom, leaveTo, category, others } = req.body;
+    const status = "Pending";
+    const mobileLeave = new leaveModel({ empno, name, leaveFrom, leaveTo, category, others, status });
+    try{
+      await mobileLeave.save();
+      res.status(201).json({ message: 'Leave application submitted successfully.', mobileLeave });
+    }catch(error){
+      console.error("Error saving leave:", error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  },
   fileFeave: async (req, res) => {
     const { empno, name, from, to, reason, others } = req.body;
     const newLeave = new leaveModel({ empno, name, from, to, reason, others });
@@ -575,39 +616,68 @@ const user = req.session.user || null;
     res.render("hr/position");
   },
   addserviceRecord: async (req, res) => {
-    const user = req.session.user || null;
-    const {
-      empno,
-      empname,
-      position,
-      start,
-      end,
-      salaryGrade,
-      tranch,
-      salary,
-      station,
-      branch,
-      type,
-    } = req.body;
-    const newService = new srecord({
-      empno,
-      empname,
-      position,
-      start,
-      end,
-      salaryGrade,
-      tranch,
-      salary,
-      station,
-      branch,
-      type,
-      campus: user.campus
-    });
-    
-
-    await newService.save();
-    res.redirect("/main");
+    try {
+      const user = req.session.user || null;
+      const {
+        empno,
+        empname,
+        position,
+        start,
+        end,
+        salaryGrade,
+        tranch,
+        salary,
+        station,
+        branch,
+        type,
+      } = req.body;
+  
+      const newService = new srecord({
+        empno,
+        empname,
+        position,
+        start,
+        end,
+        salaryGrade,
+        tranch,
+        salary,
+        station,
+        branch,
+        type,
+        campus: user?.campus || "N/A", // fallback in case user is null
+      });
+  
+      console.log("Employment Type:", type);
+  
+      if (type === 'PERMANENT') {
+        const gsis = salary * 0.09
+        const phic = salary * 0.025;
+  
+        const deductGSIS = new deduct({
+          empno,
+          deduction: "gsis",
+          avalue: gsis.toFixed(2),
+        });
+  
+        const deductPHIC = new deduct({
+          empno,
+          deduction: "philhealth",
+          avalue: phic.toFixed(2),
+        });
+  
+        await deductGSIS.save();
+        await deductPHIC.save();
+      }
+  
+      await newService.save();
+  
+      res.redirect("/main");
+    } catch (error) {
+      console.error("Error adding service record:", error);
+      res.status(500).send("Something went wrong while adding the record.");
+    }
   },
+  
   printServiceRecord: async (req, res) => {
     const id = req.params.id;
     const serviceRecords = await srecord.find({ empno: id });
@@ -680,7 +750,6 @@ const user = req.session.user || null;
   update_time: async (req, res) => {
     try{
       const user = req.session.user || null;
-      
       const { amTimeIn, amTimeOut, pmTimeIn, pmTimeOut, embedID,eventType, selectedDate, empno } = req.body;
       console.log(eventType);
       if(embedID){
@@ -699,6 +768,7 @@ const user = req.session.user || null;
         }
          
       }else{
+        console.log(selectedDate);
         
        data = {
         sid: empno,
@@ -710,15 +780,14 @@ const user = req.session.user || null;
         status: eventType,
         modifiedBy: user ? user.email : "Unknown User",
        };
-       
         try {
           const update = new TModel(data);
-        
           await update.save();
-          const result = await absentmodel.findOneAndDelete({ 
+          await absentmodel.findOneAndDelete({ 
             empno: empno,
             date: selectedDate
         });
+        
           req.flash("success", "Status record created successfully");
           return res.redirect('back');
       } catch (error) {
@@ -727,7 +796,6 @@ const user = req.session.user || null;
           return res.status(500).send("Error inserting record.");
       }
       }
-      
     }catch(error){
       console.error("Unexpected error in update_time:", error);
       req.flash("error", "An unexpected error occurred. Please contact support.");
@@ -799,6 +867,7 @@ const user = req.session.user || null;
     res.render("hr/time-edit", { data, months, years, empNo });
   },
 
+
   addsalary: async (req, res) => {
     const { sg, tranch, amount } = req.body;
     const sal = new salary({ sg, tranch, amount });
@@ -835,7 +904,7 @@ const user = req.session.user || null;
   
     try {
       const employees = await employee.find({ campus: campus });
-      console.log(`Found ${employees.length} employees for campus: ${campus}`);
+      // console.log(`Found ${employees.length} employees for campus: ${campus}`);
   
       
       const one = ["01", "03", "05", "07", "08", "10", "12"];
@@ -844,7 +913,7 @@ const user = req.session.user || null;
         : month === "02"
         ? (isLeapYear(year) ? 29 : 28)
         : 30;
-      console.log(`Processing ${num} days for month: ${month}, year: ${year}`);
+      // console.log(`Processing ${num} days for month: ${month}, year: ${year}`);
   
       
       const allServiceRecords = await srecord.find().sort({ end: -1 });
@@ -888,13 +957,13 @@ const user = req.session.user || null;
           $lte: endDate,
         },
       });
-      console.log(`Found ${dataset.length} attendance records for month: ${month}, year: ${year}`);
+      // console.log(`Found ${dataset.length} attendance records for month: ${month}, year: ${year}`);
   
       const absentEntries = [];
       const lateEntries = [];
   
       if (dataset.length === 0) {
-        console.log("WARNING: No attendance data found for the specified month and year");
+        // console.log("WARNING: No attendance data found for the specified month and year");
       }
   
       
@@ -908,6 +977,12 @@ const user = req.session.user || null;
             lunchStartTime = "12:00";
             lunchEndTime = "13:00";
             afternoonEndTime = "16:00";
+            break;
+          case "730AM":
+            morningStartTime = "07:30";
+            lunchStartTime = "12:00";
+            lunchEndTime = "13:00";
+            afternoonEndTime = "17:00";
             break;
           case "9AM":
             morningStartTime = "09:00";
@@ -953,7 +1028,7 @@ const user = req.session.user || null;
                 morningLateMinutes = Math.floor((actualStartTime - scheduledStartTime) / (1000 * 60));
               }
             } catch (error) {
-              console.error(`Error calculating morning late for ${emp.empno} on ${dates}:`, error);
+              // console.error(`Error calculating morning late for ${emp.empno} on ${dates}:`, error);
             }
           }
   
@@ -968,7 +1043,7 @@ const user = req.session.user || null;
                 amEarlyDeparture = Math.floor((scheduledStartTime - actualStartTime) / (1000 * 60));
               }
             } catch (error) {
-              console.error(`Error calculating morning undertime for ${emp.empno} on ${dates}:`, error);
+              // console.error(`Error calculating morning undertime for ${emp.empno} on ${dates}:`, error);
             }
           }
           let afternoonLateMinutes = 0;
@@ -981,7 +1056,7 @@ const user = req.session.user || null;
                 afternoonLateMinutes = Math.floor((actualStartTime - scheduledStartTime) / (1000 * 60));
               }
             } catch (error) {
-              console.error(`Error calculating afternoon late for ${emp.empno} on ${dates}:`, error);
+              // console.error(`Error calculating afternoon late for ${emp.empno} on ${dates}:`, error);
             }
           }
           let earlyDepartureMinutes = 0;
@@ -994,12 +1069,12 @@ const user = req.session.user || null;
                 earlyDepartureMinutes = Math.floor((scheduledStartTime - actualStartTime) / (1000 * 60));
               }
             } catch (error) {
-              console.error(`Error calculating afternoon undertime for ${emp.empno} on ${dates}:`, error);
+              // console.error(`Error calculating afternoon undertime for ${emp.empno} on ${dates}:`, error);
             }
           }       
           const totalLateMinutes = morningLateMinutes + afternoonLateMinutes + amEarlyDeparture + earlyDepartureMinutes;
           if (totalLateMinutes > 0) {
-            console.log(`Adding late entry for ${emp.empno} on ${dates}: ${totalLateMinutes} minutes`);
+            // console.log(`Adding late entry for ${emp.empno} on ${dates}: ${totalLateMinutes} minutes`);
             const lateEntry = {
               empno: emp.empno,
               date: dates,
@@ -1011,7 +1086,7 @@ const user = req.session.user || null;
         }
       }
   
-      console.log(`Found ${lateEntries.length} late entries to save`);
+      // console.log(`Found ${lateEntries.length} late entries to save`);
   
       
       if (absentEntries.length > 0) {
@@ -1031,10 +1106,10 @@ const user = req.session.user || null;
             successCount++;
           } catch (entryError) {
             errorCount++;
-            console.error(`Error processing absence for ${entry.empno} on ${entry.date}:`, entryError.message);
+            // console.error(`Error processing absence for ${entry.empno} on ${entry.date}:`, entryError.message);
           }
         }
-        console.log(`Absence entries processing completed. Success: ${successCount}, Errors: ${errorCount}`);
+        // console.log(`Absence entries processing completed. Success: ${successCount}, Errors: ${errorCount}`);
       }
   
       
@@ -1055,37 +1130,164 @@ const user = req.session.user || null;
             successCount++;
           } catch (entryError) {
             errorCount++;
-            console.error(`Error processing late entry for ${entry.empno} on ${entry.date}:`, entryError.message);
+            // console.error(`Error processing late entry for ${entry.empno} on ${entry.date}:`, entryError.message);
           }
         }
-        console.log(`Late entries processing completed. Success: ${successCount}, Errors: ${errorCount}`);
+        // console.log(`Late entries processing completed. Success: ${successCount}, Errors: ${errorCount}`);
       } else {
-        console.log("No late entries to save.");
+        // console.log("No late entries to save.");
       }
-      
-      const payrollRecords = employeesWithSalaries
-      .filter(emp => dataset.some(d => d.sid === emp.empno))
-      .map((emp) => {
-        const serviceRecord = serviceRecordMap.get(emp.empno) || {};
-        return {
-          empno: emp.empno,
-          name: `${emp.fname} ${emp.lname}`,  
-          type: serviceRecord.type || "",
-          serviceRecordPosition: serviceRecord.position || "",
-          salary: serviceRecord.salary,
-          month,
-          year,
-        };
-      });
-    
-    // Save payroll records, ensuring each employee has only one entry per month/year
-    for (const record of payrollRecords) {
-      await payrol.findOneAndUpdate(
-        { empno: record.empno, month: record.month, year: record.year }, // Find existing record
-        record, // Update with new data
-        { upsert: true, new: true, runValidators: true } // Overwrite if exists, insert if not
+      const employeesWithDeductions = await Promise.all(
+        employees.map(async (emp) => {
+          
+            const deductions = await deduct.find({ empno: emp.empno });
+            
+             
+            const payrollDeductions = {
+              gsis: {
+                lr: "",
+                conso: "",
+                unpaidPremium:"",
+                calamityEl:"",
+                computerLoan:"",
+                plr: "",
+                uoli: "",
+                elmpl: "",
+                gfal: "",
+                mplcpl: ""
+              },
+              hmdf: {
+                premium: "",
+                hdmfmpl: ""
+              },
+              philhealth: "",
+              sss: "",
+              lbpsl: "",
+              lwop: ""
+            };
+             
+            deductions.forEach(d => {
+              const value = d.avalue;  
+
+              switch (d.deduction.toLowerCase()) {
+                case 'unpaidPremium':
+                  payrollDeductions.gsis.unpaidPremium = value;
+                  break;
+                case 'calamityEl':
+                  payrollDeductions.gsis.calamityEl = value;
+                  break;
+                case 'computerLoan':
+                  payrollDeductions.gsis.computerLoan = value;
+                  break;
+                case 'gsis lr':
+                  payrollDeductions.gsis.lr = value;
+                  break;
+                case 'gsis conso':
+                  payrollDeductions.gsis.conso = value;
+                  break;
+                case 'gsis plr':
+                  payrollDeductions.gsis.plr = value;
+                  break;
+                case 'gsis uoli':
+                  payrollDeductions.gsis.uoli = value;
+                  break;
+                case 'gsis elmpl':
+                  payrollDeductions.gsis.elmpl = value;
+                  break;
+                case 'gsis gfal':
+                  payrollDeductions.gsis.gfal = value;
+                  break;
+                case 'gsis mplcpl':
+                  payrollDeductions.gsis.mplcpl = value;
+                  break;
+                case 'hmdf premium':
+                  payrollDeductions.hmdf.premium = value;
+                  break;
+                case 'hmdf mpl':
+                  payrollDeductions.hmdf.hdmfmpl = value;
+                  break;
+                case 'philhealth':
+                  payrollDeductions.philhealth = value;
+                  break;
+                case 'sss':
+                  payrollDeductions.sss = value;
+                  break;
+                case 'lbpsl':
+                  payrollDeductions.lbpsl = value;
+                  break;
+                case 'lwop':
+                  payrollDeductions.lwop = value;
+                  break;
+                default:
+                  // console.log(`Unknown deduction type: ${d.deduction}`);
+              }
+            });
+            return {
+              ...emp.toObject(),
+              deductions: payrollDeductions
+            };
+          
+          return emp;
+        })
       );
+
+      
+const payrollRecords = employeesWithDeductions
+  .filter(emp => dataset.some(d => d.sid === emp.empno))
+  .map((emp) => {
+    const serviceRecord = serviceRecordMap.get(emp.empno) || {};
+    const baseSalary = parseFloat(serviceRecord.salary || "0");
+    let totalDeductions = 0;
+    if (emp.deductions) {
+      const flatDeductions = Object.values(emp.deductions).flatMap(val => {
+        if (typeof val === 'object') {
+          return Object.values(val);
+        } else {
+          return [val];
+        }
+      });
+
+      totalDeductions = flatDeductions.reduce((sum, val) => {
+        const num = parseFloat(val);
+        return sum + (isNaN(num) ? 0 : num);
+      }, 0);
     }
+
+    const taxableSalary = baseSalary - totalDeductions;
+    const payrollData = {
+      empno: emp.empno,
+      name: `${emp.fname} ${emp.lname}`,
+      type: serviceRecord.type || "",
+      pstatus: emp.status || "",
+      serviceRecordPosition: serviceRecord.position || "",
+      tax: computeTaxAuto(taxableSalary),
+      pera:"",
+      salary: serviceRecord.salary || "0",
+      month,
+      year
+    };
+    // Add deductions if they exist
+    if (emp.deductions) {
+      payrollData.deductions = emp.deductions;
+    }
+    return payrollData;
+});
+  
+    // Save payroll records with deductions
+    for (const record of payrollRecords) {
+      try {
+        await payrol.findOneAndUpdate(
+          { empno: record.empno, month: record.month, year: record.year },
+          record,
+          { upsert: true, new: true, runValidators: true }
+        );
+      } catch (err) {
+        console.error(`Error saving payroll for ${record.empno}:`, err);
+      }
+    }
+
+    // console.log(`Processed ${payrollRecords.length} payroll records with deductions.`);
+
     
     console.log(`Processed ${payrollRecords.length} payroll records.`);
     
@@ -1104,12 +1306,32 @@ const user = req.session.user || null;
   
       res.render("hr/print", data);
     } catch (error) {
-      console.error("Error exporting data:", error);
+      // console.error("Error exporting data:", error);
       res.status(500).send("Failed to export data.");
     }
   },
   
 
+  payslip: async (req, res) => {
+    const { empno, month, year } = req.query;
+  
+    try {
+      const payslip = await payrol.findOne({
+        empno: empno,
+        month: month,
+        year: year
+      });
+  
+      if (!payslip) {
+        return res.status(404).send("Payslip not found");
+      }
+  
+      return res.json(payslip); // Return the payslip as JSON
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Server error");
+    }
+  },  
 
   addEmployee: (req, res) => {
     const user = req.session.user || null;
@@ -1152,14 +1374,48 @@ const user = req.session.user || null;
     const employees = await employee.find();
     res.render("hr/employee_list", { employees, months, years });
   },
-  addSignatory: async (req, res) => {
-    const { name, position, campus } = req.body;
-    const status = "active";
-    const signatory = new signatories({ name, position, status, campus });
-    await signatory.save();
-  },
+    addSignatory: async (req, res) => {
+      try{
+      const { name, position, campus, role } = req.body;
+      const status = "active";
+      const signatory = new signatories({ name, position, status, campus, docs: Array.isArray(role) ? role : [role]  });
+      
+      await signatory.save();
+      res.redirect("/signatories"); 
+    } catch (error) {
+      console.error("Error saving signatory:", error);
+      res.status(500).send("Server Error");
+    }
+    },
+    updateSignatory: async (req, res) => {
+      const { name, position, status, campus, role } = req.body;
+      await signatories.findByIdAndUpdate(req.params.id, {
+        name,
+        position,
+        status,
+        campus,
+        docs: role || []
+      });
+      res.redirect('/signatories');
+    },    
   add_employee: async (req, res) => {
    const r = req.session.user || null;
+   const campus = r.campus;
+   let empcampus;
+    switch(campus){
+      case 'Calapan':
+        empcampus = 'MCC';
+        break;
+      case 'Bongabong':
+        empcampus = 'MBC';
+        break
+      case 'Main':
+        empcampus = 'MMC';
+        break
+      default:
+        empcampus = 'WIDE';
+          break;
+    }
     try {
       const {
         lname,
@@ -1169,12 +1425,13 @@ const user = req.session.user || null;
         birthplace,
         cat_type,
         area,
-        empno,
+        empnos,
         schedule
       } = req.body;
       
       const status = "active";
-      const campus = r.campus;
+      const empno = empcampus +'-'+ empnos;
+      // const empid = empno;
       const newEmployee = new employee({
         lname,
         fname,
@@ -1227,7 +1484,7 @@ const user = req.session.user || null;
         .on("end", async () => {
           try {
             await employee.insertMany(data);
-            fs.unlinkSync(filePath);
+            fs.unlinkSync(filePath); 
             res.status(200).send({ message: "CSV data uploaded successfully" });
           } catch (dbError) {
             fs.unlinkSync(filePath);
@@ -1245,115 +1502,171 @@ const user = req.session.user || null;
 },
 
 
-  uploadFile: (req, res) => {
-    upload.single("file")(req, res, async (err) => {
-      if (err) {
-        return res.send(`Error: ${err.message}`);
+uploadFile: (req, res) => {
+  upload.single("file")(req, res, async (err) => {
+    if (err) {
+      return res.send(`Error: ${err.message}`);
+    }
+    if (!req.file) {
+      return res.send("Please upload a .dat file");
+    }
+
+    const filePath = path.join(req.file.destination, req.file.filename);
+    const stream = fs.createReadStream(filePath);
+    const rl = readline.createInterface({
+      input: stream,
+      crlfDelay: Infinity,
+    });
+
+    const cmp = req.session.user || null;
+    let campusPrefix = 'MBC-'; // Default prefix
+
+    // Determine campus prefix based on user's campus
+    if (cmp?.campus) {
+      switch(cmp.campus) {
+        case 'Main':
+          campusPrefix = 'MMC-';
+          break;
+        case 'Bongabong':
+          campusPrefix = 'MBC-';
+          break;
+        case 'Calapan':
+          campusPrefix = 'MCC-';
+          break;
       }
-      if (!req.file) {
-        return res.send("Please upload a .dat file");
-      }
+    }
 
-      const filePath = path.join(req.file.destination, req.file.filename);
-      const stream = fs.createReadStream(filePath);
-      const rl = readline.createInterface({
-        input: stream,
-        crlfDelay: Infinity,
-      });
+    try {
+      const processedRecords = []; // Track all processed records
 
-      try {
-        for await (const line of rl) {
-          if (line.trim() === "") continue;
-          const comp = line.trim().split(/\s+/);
+      // Process each line in the file
+      for await (const line of rl) {
+        if (line.trim() === "") continue;
+        const comp = line.trim().split(/\s+/);
 
-          const sid = comp[0].trim();
-          const date = comp[1].trim();
-          const time = comp[2].trim();
+        const sid = comp[0].trim();
+        const date = comp[1].trim();
+        const time = comp[2].trim();
 
-          const existingRecord = await TModel.findOne({
-            sid,
-            date,
-            am_time_in: { $ne: "-" },
-          });
-
-          if (existingRecord) {
-            let updateData = {};
-
-            if (!existingRecord.am_time_out) {
-              updateData.am_time_out = time;
-            } else if (!existingRecord.pm_time_in) {
-              updateData.pm_time_in = time;
-            } else if (!existingRecord.pm_time_out) {
-              updateData.pm_time_out = time;
-            } else if (!existingRecord.ot_time_in) {
-              updateData.ot_time_in = time;
-            } else if (!existingRecord.ot_time_out) {
-              updateData.ot_time_out = time;
-            }
-
-            if (Object.keys(updateData).length > 0) {
-              await TModel.updateOne({ sid, date }, { $set: updateData });
-            }
-          } else {
-            const newRecord = new TModel({
-              sid,
-              date,
-              am_time_in: time,
-            });
-            await newRecord.save();
-          }
-        }
-
-        const incompleteRecords = await TModel.find({
+        const existingRecord = await TModel.findOne({
           $or: [
-            { am_time_out: null },
-            { pm_time_in: null },
-            { pm_time_out: null },
-            { ot_time_in: null },
-            { ot_time_out: null },
+            { sid: sid },
+            { sid: `${campusPrefix}${sid}` } // Check both prefixed and non-prefixed
           ],
+          date,
+          am_time_in: { $ne: "-" },
         });
 
-        for (let record of incompleteRecords) {
-          const updateData = {};
+        if (existingRecord) {
+          let updateData = {};
 
-          if (!record.am_time_out) {
-            updateData.am_time_out = "-";
-          }
-          if (!record.pm_time_in) {
-            updateData.pm_time_in = "-";
-          }
-          if (!record.pm_time_out) {
-            updateData.pm_time_out = "-";
-          }
-          if (!record.ot_time_in) {
-            updateData.ot_time_in = "-";
-          }
-          if (!record.ot_time_out) {
-            updateData.ot_time_out = "-";
+          if (!existingRecord.am_time_out) {
+            updateData.am_time_out = time;
+          } else if (!existingRecord.pm_time_in) {
+            updateData.pm_time_in = time;
+          } else if (!existingRecord.pm_time_out) {
+            updateData.pm_time_out = time;
+          } else if (!existingRecord.ot_time_in) {
+            updateData.ot_time_in = time;
+          } else if (!existingRecord.ot_time_out) {
+            updateData.ot_time_out = time;
           }
 
           if (Object.keys(updateData).length > 0) {
-            await TModel.updateOne({ _id: record._id }, { $set: updateData });
+            await TModel.updateOne(
+              { _id: existingRecord._id }, 
+              { $set: updateData }
+            );
+            processedRecords.push(existingRecord._id);
           }
+        } else {
+          const newRecord = new TModel({
+            sid: `${campusPrefix}${sid}`,
+            date,
+            am_time_in: time,
+            am_time_out: null,
+            pm_time_in: null,
+            pm_time_out: null,
+            ot_time_in: null,
+            ot_time_out: null,
+          });
+          await newRecord.save();
+          processedRecords.push(newRecord._id);
         }
-
-        if (req.body.uptype === "half") {
-          const latestRecord = await TModel.findOne().sort({ date: -1 });
-          if (latestRecord) {
-            await TModel.deleteOne({ _id: latestRecord._id });
-          }
-        }
-
-        res.send(
-          `File uploaded and processed successfully: ${req.file.filename}`
-        );
-      } catch (error) {
-        console.error("Error processing file:", error);
-        res.send("There was an error processing your file.");
       }
-    });
-  },
+
+      // Update all processed records to ensure they have the correct prefix
+      await TModel.updateMany(
+        { 
+          _id: { $in: processedRecords },
+          sid: { $not: new RegExp(`^${campusPrefix}`) }
+        },
+        [{
+          $set: { 
+            sid: { $concat: [campusPrefix, "$sid"] }
+          }
+        }]
+      );
+
+      // Handle incomplete records
+      const incompleteRecords = await TModel.find({
+        $or: [
+          { am_time_out: null },
+          { pm_time_in: null },
+          { pm_time_out: null },
+          { ot_time_in: null },
+          { ot_time_out: null },
+        ],
+      });
+
+      for (let record of incompleteRecords) {
+        const updateData = {};
+        if (!record.am_time_out) updateData.am_time_out = "-";
+        if (!record.pm_time_in) updateData.pm_time_in = "-";
+        if (!record.pm_time_out) updateData.pm_time_out = "-";
+        if (!record.ot_time_in) updateData.ot_time_in = "-";
+        if (!record.ot_time_out) updateData.ot_time_out = "-";
+
+        if (Object.keys(updateData).length > 0) {
+          await TModel.updateOne(
+            { _id: record._id }, 
+            { $set: updateData }
+          );
+        }
+      }
+
+      // Handle half upload if needed
+      if (req.body.uptype === "half") {
+        const latestRecord = await TModel.findOne().sort({ date: -1 });
+        if (latestRecord) {
+          await TModel.deleteOne({ _id: latestRecord._id });
+        }
+      }
+
+      res.send({
+        success: true,
+        message: `File processed successfully with ${campusPrefix} prefix`,
+        filename: req.file.filename,
+        recordsProcessed: processedRecords.length
+      });
+
+    } catch (error) {
+      console.error("Error processing file:", error);
+      res.status(500).send({
+        success: false,
+        message: "Error processing file",
+        error: error.message
+      });
+    } finally {
+      // Clean up the uploaded file
+      try {
+        fs.unlinkSync(filePath);
+      } catch (cleanupError) {
+        console.error("Error cleaning up file:", cleanupError);
+      }
+    }
+  });
+},
 
   getAllBooks: async (req, res) => {
     const books = await Book.find();

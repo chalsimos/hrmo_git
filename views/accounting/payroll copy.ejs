@@ -1,0 +1,941 @@
+<!--
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ -->
+
+<%- include('../partials/top') %>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper"> 
+        <%- include('partials/nav') %>
+        <%- include('partials/aside') %>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                  <div class="row mb-2">
+                    <div class="col-sm-6">
+                      <h1>Payroll</h1>
+                    </div>
+                    <div class="col-sm-6">
+                      <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">payroll</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div><!-- /.container-fluid -->
+              </section>
+      
+             <section class="content">
+                <div class="container-fluid">
+                   
+                    
+            
+                  <div class="row">
+                    <div class="col-12">
+                      <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                        <div class="alert alert-success">
+                          <%= successMessage %>
+                        </div>
+                      <% } %>
+
+                      <% if (typeof errorMessage !== 'undefined' && errorMessage.length > 0) { %>
+                        <div class="alert alert-danger">
+                          <%= errorMessage %>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">PERMANENT</h3>
+                        </div>
+                       
+                        <div class="card-body p-0">
+                          <div class="table-responsive" style="max-height: 500px; overflow: auto;">
+                            <div style="width: 100%; overflow-x: auto;">
+                              <div class="scrollable-table">
+                                <table id="payrollTable" class="table table-bordered payroll-table">
+                                  <thead class="table-header">
+                                    <tr>
+                                      <th rowspan="3">Serial No.</th>
+                                      <th rowspan="3">Name</th>
+                                      <th rowspan="3">Position</th>
+                                      <th rowspan="3">Employee No.</th>
+                                      <th colspan="4" style="text-align: center;">COMPENSATIONS</th>
+                                      <th colspan="15" style="text-align: center;">DEDUCTIONS</th>
+                                      <th rowspan="3">1st Half Rcd.</th>
+                                      <th rowspan="3">2nd Half Rcd.</th>
+                                      <th rowspan="3">Action</th>
+                                    </tr>
+                                    <tr>
+                                      <th rowspan="2">Salaries and Wages-Regular</th>
+                                      <th rowspan="2">PERA / Subs & Laundry</th>
+                                      <th rowspan="2">Adjustment</th>
+                                      <th rowspan="2">Gross Amount Earned</th>
+                                      <th rowspan="2">W/TAX /(REFUND)</th>
+                                      <th colspan="7">GSIS</th>
+                                      <th colspan="2">HDMF</th>
+                                      <th rowspan="2">PHIL HEALTH/ (ADJ.)</th>
+                                      <th rowspan="2">SSS</th>
+                                      <th rowspan="2">LBP SL</th>
+                                      <th rowspan="2">LWOP / Undertime</th>
+                                      <th rowspan="2">Total Deductions</th>
+                                    </tr>
+                                    <tr>
+                                      <th>L & R</th>
+                                      <th>CONSO</th>
+                                      <th>PLR / PLO</th>
+                                      <th>UOLI</th>
+                                      <th>E. L. / MPL LITE</th>
+                                      <th>GFAL</th>
+                                      <th>MPL/CPL</th>
+                                      <th>PREMIUM</th>
+                                      <th>MPL/CAL/ HOUSING</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% 
+                                    let seriesCount = 1; 
+                                    data.permanent.forEach(employee => { 
+                                    %>
+                                    <tr>
+                                      <% 
+                                      const empAbsence = data.absences.find(abs => abs._id === employee.empno) || { absencesCount: 0, absenceDates: [] };
+                                      const ndays = empAbsence.absencesCount;
+                                      const absenceDatesTooltip = empAbsence.absenceDates.join(", ");
+                                      const nsalary = Number(employee.salary);
+                                      const dsalary = nsalary / 22;
+                                      const hsalary = dsalary / 8;
+                                      const msalary = hsalary / 60;
+                                      const lateEntry = data.lateEntries.find(le => le._id == employee.empno) || { totalLateMinutes: 0 };
+                                      const totalLate = Number(lateEntry.totalLateMinutes) || 0;
+                                      const remainingMinutes = totalLate % 480;
+                                      const nhrs = Math.floor(remainingMinutes / 60);
+                                      const nmin = remainingMinutes % 60;
+                                      const pera = 2000;
+                                      const dailyRatePera = Math.round((pera / 22) * 100) / 100;
+                                      const hpera = (dailyRatePera / 8).toFixed(2);
+                                      const mpera = (hpera / 60).toFixed(2);
+                                      const dsdeduction = dsalary * ndays;
+                                      const hsdeduction = hsalary * nhrs;
+                                      const msdeduction = msalary * nmin;
+                                      const lwop = dsdeduction + hsdeduction + msdeduction;
+                                      const stotalDeduction = dsdeduction + hsdeduction + msdeduction;
+                                      const dpdeduction = dailyRatePera * ndays;
+                                      const hpdeduction = hpera * nhrs;
+                                      const mpdeduction = mpera * nmin;
+                                      const employeeDeductions = data.deductionsByEmpno[employee.empno] || [];
+                                      const totalMandatoryDeductions = employeeDeductions.reduce((sum, deduction) => sum + deduction.avalue, 0);
+                                      const ptotalDeduction = dpdeduction + hpdeduction + mpdeduction;
+                                      const gtotalDeduction = dpdeduction + hpdeduction + mpdeduction + totalMandatoryDeductions;
+                                      
+                                      
+                                      const ttotaldeduct = ptotalDeduction + totalMandatoryDeductions;
+                                      const ssalary = nsalary - totalMandatoryDeductions;
+                                      const annualTaxableIncome = ssalary * 12;
+                                      let annualTax = 0;
+                                      let monthlyTax = 0;
+                                      let excess = 0;
+                                    
+                                      if (annualTaxableIncome <= 250000) {
+                                        annualTax = 0;
+                                      } else if (annualTaxableIncome <= 400000) {
+                                        excess = annualTaxableIncome - 250000;
+                                        annualTax = excess * 0.15;
+                                      } else if (annualTaxableIncome <= 800000) {
+                                        excess = annualTaxableIncome - 400000;
+                                        annualTax = 22500 + (excess * 0.20);
+                                      } else if (annualTaxableIncome <= 2000000) {
+                                        excess = annualTaxableIncome - 800000;
+                                        annualTax = 102500 + (excess * 0.25);
+                                      } else if (annualTaxableIncome <= 8000000) {
+                                        excess = annualTaxableIncome - 2000000;
+                                        annualTax = 402500 + (excess * 0.30);
+                                      } else {
+                                        excess = annualTaxableIncome - 8000000;
+                                        annualTax = 2202500 + (excess * 0.35);
+                                      }
+                                    
+                                      monthlyTax = annualTax / 12;
+
+                                      
+                                      const gsisDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const consoDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis-conso")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const plrDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis-plr")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const uoliDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis-uoli")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const gfalDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis-gfal")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const elmplDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "gsis-elmpl")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      
+                                      const premiumDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "hdmf-premium")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      const mplDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "hdmf-mpl")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      
+                                      const phicDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "philhealth")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      
+                                      const sssDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "sss")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      
+                                      const lbpslDeduction = employeeDeductions
+                                        .filter(deduction => deduction.deduction === "lbp-sl")
+                                        .reduce((sum, deduction) => sum + deduction.avalue, 0);
+
+                                      
+                                      const tstotal = nsalary - (stotalDeduction + monthlyTax);
+                                      <!-- console.log(monthlyTax + stotalDeduction); -->
+
+                                      %>
+                                      <td><strong><%= seriesCount++ %></strong></td>
+                                      <td><strong><%= employee.name %></strong></td>
+                                      <td><strong><%= employee.serviceRecordPosition %></strong></td>
+                                      <td><strong><%= employee.empno %></strong></td>
+                                      <td><strong><%= nsalary.toFixed(2) %></strong></td>
+                                      <td><strong><%= pera.toFixed(2) %></strong></td>
+                                      <td>-</td>
+                                      <td><strong><%= (nsalary + pera).toFixed(2) %></strong></td>
+                                      <td><strong><%= monthlyTax.toFixed(2) %></strong></td>
+                                      <td><strong><%= gsisDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= consoDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= plrDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= uoliDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= elmplDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= gfalDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= mplDeduction.toFixed(2) %></strong></td>
+                                      <td><strong>  <%= premiumDeduction.toFixed(2) %></strong></td>
+                                      
+                                      <td><strong>  <%= mplDeduction.toFixed(2) %></strong></td>
+
+                                      <td><%= phicDeduction.toFixed(2) %></td>
+                                      <td><%= sssDeduction.toFixed(2) %></td>
+                                      <td><%= lbpslDeduction.toFixed(2) %></td>
+                                      
+                                      <td><%= (totalMandatoryDeductions + stotalDeduction).toFixed(2) %></td>
+                                      <td><%= (monthlyTax + gsisDeduction + consoDeduction +plrDeduction+uoliDeduction+elmplDeduction+gfalDeduction+mplDeduction+premiumDeduction+phicDeduction+sssDeduction+lbpslDeduction+stotalDeduction + ptotalDeduction).toFixed(2) %></td>
+                                      <td><%= (tstotal/2 +2000).toFixed(0) %></td>
+                                      
+                                      <td><%= (tstotal/2).toFixed(2) %></td>
+                                      <td><button id="modify">modify</button> </td>
+                                    </tr>
+                                    <% }); %>
+                                   
+                                    <tr class="total-row">
+                                      <td colspan="4">TOTAL</td>
+                                      <td>114,685.00</td>
+                                      <td>4,000.00</td>
+                                      <td>-</td>
+                                      <td>68,775.00</td>
+                                      <td>2,273.25</td>
+                                      <td>5,874.50</td>
+                                      <td>1,600.00</td>
+                                      <td>-</td>
+                                      <td>-</td>
+                                      <td>-</td>
+                                      <td>4,627.58</td>
+                                      <td>800.00</td>
+                                      <td>2,892.92</td>
+                                      <td>813.22</td>
+                                      <td>-</td>
+                                      <td>107.81</td>
+                                      <td>17,734.26</td>
+                                      <td>27,653.00</td>
+                                      <td>23,661.94</td>
+                                      <td colspan="2"></td>
+                                      
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                       
+                        <button id="downloadExcel" class="btn btn-primary">Download as Excel</button>
+                        
+                       
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+                        
+                        <script>
+                          document.getElementById('downloadExcel').addEventListener('click', function () {
+                            const table = document.getElementById('payrollTable');                                                  
+                            const rows = Array.from(table.querySelectorAll('tr'));
+                            const data = rows.map(row => {
+                              const cells = Array.from(row.querySelectorAll('th, td'));
+                              return cells.map(cell => cell.innerText.trim());
+                            });                                                  
+                            const wb = XLSX.utils.book_new();
+                            const ws = XLSX.utils.aoa_to_sheet(data);                                                  
+                            XLSX.utils.book_append_sheet(wb, ws, 'Payroll Data');                                                  
+                            XLSX.writeFile(wb, 'Payroll_Report.xlsx');
+                          });
+                        </script>
+                       
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+             
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">COS</h3>
+                        </div>
+                       
+                        <div class="card-body">
+                          <table id="faculty" class="table table-bordered table-striped mb-0" style="table-layout: fixed; width: 100%;">
+                            <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                              <tr>
+                                
+                                <th style="width: 120px;">Name</th>
+                                <th colspan="3" style="width: 180px;">Time</th>
+                                <th colspan="4" style="width: 300px;">Salary Rates</th>
+                                <th colspan="4" style="width: 300px;">SALARY DEDUCTIONS</th>
+                                <th colspan="4" style="width: 300px;">PERA DEDUCTIONS</th>
+                                <th style="width: 150px;">Mandatory Deductions</th>
+                                <th style="width: 100px;"></th>
+                                
+                                <th style="width: 50px;">Action</th>
+                              </tr>
+                              <tr>
+                                
+                                <td></td>
+                                <td style="width: 20px;">Days</td>
+                                <td style="width: 20px;">Hours</td>
+                                <td style="width: 20px;">Minutes</td>
+                                <td style="width: 60px;">Monthly Rate</td>
+                                <td style="width: 60px;">Rate/Day</td>
+                                <td style="width: 60px;">Rate/Hour</td>
+                                <td style="width: 60px;">Rate/Minute</td>
+                                
+                                <td style="width: 60px;">Amt/day</td>
+                                <td style="width: 60px;">Amt/hr</td>
+                                <td style="width: 60px;">Amt/min</td>
+                                <td style="width: 60px;">Total</td>
+                                <td style="width: 60px;">Amt/day</td>
+                                <td style="width: 60px;">Amt/hr</td>
+                                <td style="width: 60px;">Amt/min</td>
+                                
+                                <td style="width: 60px;">Total</td>  
+                                <td style="width: 200px;">
+                                  deduction
+                                      </td>                           
+                                <td style="width: 50px;">Grand <br>Total</td>
+                                
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.cos.forEach(employee => { %>
+                                <tr>
+                                  <% 
+                                  const empAbsence = data.absences.find(abs => abs._id === employee.empno) || { absencesCount: 0, absenceDates: [] };
+                                  const ndays = empAbsence.absencesCount;
+                                  const absenceDatesTooltip = empAbsence.absenceDates.join(", ");
+                                    const nsalary = Number(employee.salary);
+                                    const dsalary = nsalary / 22;
+                                    const hsalary = dsalary / 8;
+                                    const msalary = hsalary / 60;
+                                
+                                   
+                                    const lateEntry = data.lateEntries.find(le => le._id == employee.empno) || { totalLateMinutes: 0 };
+                                
+                                    const totalLate = Number(lateEntry.totalLateMinutes) || 0;
+                                   
+                                    const remainingMinutes = totalLate % 480;
+                                    const nhrs = Math.floor(remainingMinutes / 60);
+                                    const nmin = remainingMinutes % 60;
+                                
+                                    const pera = 2000;
+                                    const dailyRatePera = Math.round((pera / 22) * 100) / 100;
+                                    const hpera = (dailyRatePera / 8).toFixed(2);
+                                    const mpera = (hpera / 60).toFixed(2);
+                                
+                                    const dsdeduction = dsalary * ndays;
+                                    const hsdeduction = hsalary * nhrs;
+                                    const msdeduction = msalary * nmin;
+                                    const stotalDeduction = dsdeduction + hsdeduction + msdeduction;
+                                
+                                    const dpdeduction = dailyRatePera * ndays;
+                                    const hpdeduction = hpera * nhrs;
+                                    const mpdeduction = mpera * nmin;
+                                   
+                                   
+                                   
+                                    const employeeDeductions = data.deductionsByEmpno[employee.empno] || [];
+                                      const totalMandatoryDeductions = employeeDeductions.reduce((sum, deduction) => sum + deduction.avalue, 0);
+                                      const ptotalDeduction = dpdeduction + hpdeduction + mpdeduction ;
+                                      const gtotalDeduction = dpdeduction + hpdeduction + mpdeduction + totalMandatoryDeductions;
+                                  %>
+                                  
+                                  <td><%= employee.name %></td>
+                                  <td> <span 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-html="true" 
+                                    title="Absent Dates: <%= absenceDatesTooltip %>">
+                                    <%= ndays %>
+                                  </span></td>
+                                  <td><%= nhrs %></td>
+                                  <td><%= nmin %></td>
+                                
+                                  <td><%= nsalary.toFixed(2) %></td>
+                                  <td><%= dsalary.toFixed(2) %></td>
+                                  <td><%= hsalary.toFixed(2) %></td>
+                                  <td><%= msalary.toFixed(2) %></td>
+                                  <td><%= pera.toFixed(2) %></td>
+                                  <td><%= dailyRatePera.toFixed(2) %></td>
+                                  <td><%= hpera %></td>
+
+                                  <td><%= stotalDeduction.toFixed(2) %></td>
+                                  <td><%= dpdeduction.toFixed(2) %></td>
+                                  <td><%= hpdeduction.toFixed(2) %></td>
+                                  <td><%= mpdeduction.toFixed(2) %></td>
+                                  <td><%= ptotalDeduction.toFixed(2) %></td>
+                                  <td>
+                                    <% 
+                                    
+                                     
+                                     
+                                      
+                                    %>
+                                    <% if (employeeDeductions.length > 0) { %>
+                                      <ul>
+                                        <% employeeDeductions.forEach(deduction => { %>
+                                          <li>
+                                            <%= deduction.deduction %>: <%= helpers.formatCurrency(deduction.avalue) %>
+                                          </li>
+                                        <% }); %>
+                                      </ul>
+                                      total: <%= totalMandatoryDeductions.toFixed(2) %>
+                                    <% } else { %>
+                                      <p>No mandatory deductions</p>
+                                    <% } %>
+                                  </td>
+                                  <td 
+                                  data-bs-toggle="tooltip" 
+                                  data-bs-html="true" 
+                                  title="Mandatory Deductions: <%= totalMandatoryDeductions.toFixed(2) %>|| Salary Deduction: <%= stotalDeduction.toFixed(2) %> || PERA Deduction: <%= ptotalDeduction.toFixed(2) %>">
+                                  <%= totalMandatoryDeductions.toFixed(2) %> + <%= (stotalDeduction + ptotalDeduction).toFixed(2) %> =
+                                  <%= (totalMandatoryDeductions + stotalDeduction + ptotalDeduction).toFixed(2) %>
+                                </td>
+                                    <td><a href="/filteryear?empno=<%= employee.empno %>&year=<%= year %>&month=<%= month %>">modify</a>
+                                  </td>
+                                </tr>
+                                <% }); %>
+                                
+                          </tbody>
+                          </table>
+                          
+              
+                         
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                       
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+             
+              <section class="content">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">JOB ORDER</h3>
+                        </div>
+                       
+                        <div class="card-body">
+                          <table id="faculty" class="table table-bordered table-striped mb-0" style="table-layout: fixed; width: 100%;">
+                            <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                              <tr>
+                                
+                                <th style="width: 120px;">Name</th>
+                                <th colspan="3" style="width: 180px;">Time</th>
+                                <th colspan="4" style="width: 300px;">Salary Rates</th>
+                                <th colspan="4" style="width: 300px;">SALARY DEDUCTIONS</th>
+                                <th colspan="4" style="width: 300px;">PERA DEDUCTIONS</th>
+                                <th style="width: 150px;">Mandatory Deductions</th>
+                                <th style="width: 100px;"></th>
+                                
+                                <th style="width: 50px;">Action</th>
+                              </tr>
+                              <tr>
+                                
+                                <td></td>
+                                <td style="width: 20px;">Days</td>
+                                <td style="width: 20px;">Hours</td>
+                                <td style="width: 20px;">Minutes</td>
+                                <td style="width: 60px;">Monthly Rate</td>
+                                <td style="width: 60px;">Rate/Day</td>
+                                <td style="width: 60px;">Rate/Hour</td>
+                                <td style="width: 60px;">Rate/Minute</td>
+                                
+                                <td style="width: 60px;">Amt/day</td>
+                                <td style="width: 60px;">Amt/hr</td>
+                                <td style="width: 60px;">Amt/min</td>
+                                <td style="width: 60px;">Total</td>
+                                <td style="width: 60px;">Amt/day</td>
+                                <td style="width: 60px;">Amt/hr</td>
+                                <td style="width: 60px;">Amt/min</td>
+                                
+                                <td style="width: 60px;">Total</td>  
+                                <td style="width: 200px;">
+                                  deduction
+                                      </td>                           
+                                <td style="width: 50px;">Grand <br>Total</td>
+                                
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% data.jobOrder.forEach(employee => { %>
+                                <tr>
+                                  <% 
+                                  const empAbsence = data.absences.find(abs => abs._id === employee.empno) || { absencesCount: 0, absenceDates: [] };
+                                  const ndays = empAbsence.absencesCount;
+                                  const absenceDatesTooltip = empAbsence.absenceDates.join(", ");
+                                    const nsalary = Number(employee.salary);
+                                    const dsalary = nsalary / 22;
+                                    const hsalary = dsalary / 8;
+                                    const msalary = hsalary / 60;
+                                
+                                   
+                                    const lateEntry = data.lateEntries.find(le => le._id == employee.empno) || { totalLateMinutes: 0 };
+                                
+                                    const totalLate = Number(lateEntry.totalLateMinutes) || 0;
+                                   
+                                    const remainingMinutes = totalLate % 480;
+                                    const nhrs = Math.floor(remainingMinutes / 60);
+                                    const nmin = remainingMinutes % 60;
+                                
+                                    const pera = 2000;
+                                    const dailyRatePera = Math.round((pera / 22) * 100) / 100;
+                                    const hpera = (dailyRatePera / 8).toFixed(2);
+                                    const mpera = (hpera / 60).toFixed(2);
+                                
+                                    const dsdeduction = dsalary * ndays;
+                                    const hsdeduction = hsalary * nhrs;
+                                    const msdeduction = msalary * nmin;
+                                    const stotalDeduction = dsdeduction + hsdeduction + msdeduction;
+                                
+                                    const dpdeduction = dailyRatePera * ndays;
+                                    const hpdeduction = hpera * nhrs;
+                                    const mpdeduction = mpera * nmin;
+                                   
+                                   
+                                   
+                                    const employeeDeductions = data.deductionsByEmpno[employee.empno] || [];
+                                      const totalMandatoryDeductions = employeeDeductions.reduce((sum, deduction) => sum + deduction.avalue, 0);
+                                      const ptotalDeduction = dpdeduction + hpdeduction + mpdeduction ;
+                                      const gtotalDeduction = dpdeduction + hpdeduction + mpdeduction + totalMandatoryDeductions;
+                                  %>
+                                  
+                                  <td><%= employee.name %></td>
+                                  <td> <span 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-html="true" 
+                                    title="Absent Dates: <%= absenceDatesTooltip %>">
+                                    <%= ndays %>
+                                  </span></td>
+                                  <td><%= nhrs %></td>
+                                  <td><%= nmin %></td>
+                                
+                                  <td><%= nsalary.toFixed(2) %></td>
+                                  <td><%= dsalary.toFixed(2) %></td>
+                                  <td><%= hsalary.toFixed(2) %></td>
+                                  <td><%= msalary.toFixed(2) %></td>
+                                  <td><%= pera.toFixed(2) %></td>
+                                  <td><%= dailyRatePera.toFixed(2) %></td>
+                                  <td><%= hpera %></td>
+
+                                  <td><%= stotalDeduction.toFixed(2) %></td>
+                                  <td><%= dpdeduction.toFixed(2) %></td>
+                                  <td><%= hpdeduction.toFixed(2) %></td>
+                                  <td><%= mpdeduction.toFixed(2) %></td>
+                                  <td><%= ptotalDeduction.toFixed(2) %></td>
+                                  <td>
+                                    <% 
+                                    
+                                     
+                                     
+                                      
+                                    %>
+                                    <% if (employeeDeductions.length > 0) { %>
+                                      <ul>
+                                        <% employeeDeductions.forEach(deduction => { %>
+                                          <li>
+                                            <%= deduction.deduction %>: <%= helpers.formatCurrency(deduction.avalue) %>
+                                          </li>
+                                        <% }); %>
+                                      </ul>
+                                      total: <%= totalMandatoryDeductions.toFixed(2) %>
+                                    <% } else { %>
+                                      <p>No mandatory deductions</p>
+                                    <% } %>
+                                  </td>
+                                  <td 
+                                  data-bs-toggle="tooltip" 
+                                  data-bs-html="true" 
+                                  title="Mandatory Deductions: <%= totalMandatoryDeductions.toFixed(2) %>|| Salary Deduction: <%= stotalDeduction.toFixed(2) %> || PERA Deduction: <%= ptotalDeduction.toFixed(2) %>">
+                                  <%= totalMandatoryDeductions.toFixed(2) %> + <%= (stotalDeduction + ptotalDeduction).toFixed(2) %> =
+                                  <%= (totalMandatoryDeductions + stotalDeduction + ptotalDeduction).toFixed(2) %>
+                                </td>
+                                    <td><a href="/filteryear?empno=<%= employee.empno %>&year=<%= year %>&month=<%= month %>">modify</a>
+                                  </td>
+                                </tr>
+                                <% }); %>
+                                
+                          </tbody>
+              
+                         
+                         
+              
+                         
+                          <div id="modal2" class="modal">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Modify</h5>
+                                  <span class="close" onclick="closeModal('modal2')">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="myForm" method="post" action='/modifyemp'>
+                                    <input type="hidden" id="sid" name="emp">
+                                    <div class="row">
+                                      <div class="col-lg-4">
+                                        <label>LastName</label>
+                                        <input type="text" name="lastName" id="lastName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-4">
+                                        <label>FirstName</label>
+                                        <input type="text" name="firstName" id="firstName" class="form-control">
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Middle Initial</label>
+                                        <input type="text" name="middleName" id="middleName" class="form-control">
+                                      </div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-lg-3">
+                                        <label>EmpID</label>
+                                        <input type="text" name="empid" id="empid" class="form-control">
+                                      </div>
+                                      <div class="col-lg-5">
+                                        <label>Department</label>
+                                        <select class="form-control" name="dept" required>
+                                          <option value="ADMIN">ADMIN</option>
+                                          <option value="JOBORDER">JOB ORDER</option>
+                                          <option value="NONPERMANENT">NON-PERMANENT</option>
+                                          <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-lg-3">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" required>
+                                          <option value="active">active</option>
+                                          <option value="inactive">inactive</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">save changes</button>
+                                </div>
+                              </form>
+                              </div>
+                            </div>
+                          </div>
+              
+                        </div>
+                       
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+             
+               
+              
+          </div>
+        </div>
+       <script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelector("table").addEventListener("click", async function (event) {
+        const target = event.target;
+        if (target.tagName === "BUTTON" && target.textContent.trim() === "modify") {
+            const row = target.closest("tr"); 
+            const cells = row.querySelectorAll("td:not(:last-child)"); 
+
+            
+            cells.forEach(cell => {
+                const value = cell.textContent.trim(); 
+                cell.innerHTML = `<input type="text" value="${value}" />`; 
+            });            
+            target.textContent = "save";
+            target.onclick = async function () {
+                const updatedData = {};
+                cells.forEach((cell, index) => {
+                    const input = cell.querySelector("input");
+                    updatedData[`field${index}`] = input.value; 
+                });
+
+                
+                try {
+                    const response = await fetch('/update-single-payroll', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    if (response.ok) {
+                        
+                        const result = await response.json();
+
+                        
+                        cells.forEach(cell => {
+                            const input = cell.querySelector("input");
+                            cell.textContent = input.value; 
+                        });
+
+                        
+                        target.textContent = "modify";
+
+                        
+                        target.onclick = null; 
+                        target.addEventListener("click", arguments.callee); 
+
+                        console.log("Data updated successfully:", result);
+                    } else {
+                        console.error("Failed to update data:", response.statusText);
+                        alert("Failed to update data. Please try again.");
+                    }
+                } catch (error) {
+                    console.error("Error during POST request:", error);
+                    alert("An error occurred while updating the data.");
+                }
+            };
+        }
+    });
+});
+
+        
+        document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      });
+  $(document).ready(function () {
+   
+    function checkDeviceStatus(ip, cardElement) {
+      $.ajax({
+        url: "/check-device",
+        type: "GET",
+        data: { ip: ip },
+        success: function (data) {
+          const status = data.status === "Online" ? "bg-success" : "bg-danger";
+          const responseTime = data.time ? `Response Time: ${data.time} ms` : "";
+
+         
+          $(cardElement)
+            .removeClass("bg-secondary bg-success bg-danger")
+            .addClass(status)
+            .find(".status")
+            .html(`${data.status} ${responseTime}`);
+        },
+        error: function () {
+         
+          $(cardElement)
+            .removeClass("bg-secondary bg-success")
+            .addClass("bg-danger")
+            .find(".status")
+            .text("Offline (Error)");
+        }
+      });
+    }
+
+   
+    setInterval(function () {
+      $(".small-box").each(function () {
+        const ip = $(this).data("device-ip");
+        checkDeviceStatus(ip, this);
+      });
+    }, 5000);
+  });
+  document.addEventListener('click', function (e) {
+  if (e.target.closest('.edit-ip-btn')) {
+    const button = e.target.closest('.edit-ip-btn');
+    const ipAddress = button.getAttribute('data-ip');
+    const deviceName = button.getAttribute('data-name');
+
+   
+    document.getElementById('deviceIp').value = ipAddress;
+    document.getElementById('deviceName').value = deviceName;
+
+   
+    $('#editDeviceModal').modal('show');
+  }
+});
+document.getElementById('addDeviceForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const ipAddress = document.getElementById('deviceIp').value;
+  const deviceName = document.getElementById('deviceName').value;
+  fetch('/add-device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ip: ipAddress, name: deviceName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ip && data.name) {
+           
+            const deviceBox = document.querySelector(`div[data-device-ip="${ipAddress}"]`);
+            deviceBox.querySelector('h3').textContent = newIpAddress;
+            deviceBox.querySelector('p').textContent = deviceName;
+            $('#addevice').modal('hide');
+        } else {
+            alert('Error saving device information');
+        }
+    })
+    .catch(err => alert('Error updating device'));
+});
+document.getElementById('editDeviceForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const ipAddress = document.getElementById('deviceIp').value;
+    const newIpAddress = document.getElementById('newDeviceIp').value;
+    const deviceName = document.getElementById('deviceName').value;
+
+    fetch('/update-device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ip: ipAddress, newIp: newIpAddress, name: deviceName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ip && data.name) {
+           
+            const deviceBox = document.querySelector(`div[data-device-ip="${ipAddress}"]`);
+            deviceBox.querySelector('h3').textContent = newIpAddress;
+            deviceBox.querySelector('p').textContent = deviceName;
+            $('#editDeviceModal').modal('hide');
+        } else {
+            alert('Error saving device information');
+        }
+    })
+    .catch(err => alert('Error updating device'));
+});
+
+</script>
+<%- include('../partials/end') %>

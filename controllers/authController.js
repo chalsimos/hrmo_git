@@ -1,4 +1,23 @@
-
+/**
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ */
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const Payroll = require("../models/PayrolModel");
@@ -11,30 +30,30 @@ exports.validate = async(req, res) =>{
   const { password, year, month } = req.body;
 
   try {
-    // Step 1: Validate the user's session
+    
     const userId = req.session.user?._id;
 
     if (!userId) {
       return res.json({ success: false, message: 'User not logged in.' });
     }
 
-    // Step 2: Fetch the user from the database
+    
     const user = await User.findById(userId);
 
     if (!user) {
       return res.json({ success: false, message: 'User not found.' });
     }
 
-    // Step 3: Compare the provided password with the hashed password
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.json({ success: false, message: 'Incorrect password.' });
     }
 
-    // Step 4: Update all matching payroll records
-    const filter = { year, month }; // Find records with the same year and month
-    const update = { pstatus: 'AP' }; // Update the pstatus field to "AP"
+    
+    const filter = { year, month }; 
+    const update = { pstatus: 'AP' }; 
 
     const result = await Payroll.updateMany(filter, update);
 

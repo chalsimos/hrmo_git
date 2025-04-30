@@ -1,3 +1,24 @@
+<!--
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ -->
+
 <%- include('../partials/top') %>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper"> 
@@ -102,12 +123,22 @@
           <label for="name">Deduction Name</label>
           <!-- <input type="text" name="name" id="name" class="form-control" placeholder="Enter deduction name"> -->
            <select name="name" id="name" class="form-control">
+            <option value="unpaidPremium">GSIS - Unpaid Premium</option>
+            <option value="calamityEl">GSIS - CALAMITY / EL</option>
+            <option value="computerLoan">GSIS - Computer Loan / EL</option>
+            <option value="gsis lr">GSIS - LR</option>
+            <option value="gsis conso">GSIS - CONSO</option>
+            <option value="gsis plr">GSIS - PLR</option>
+            <option value="gsis uoli">GSIS - UOLI</option>
+            <option value="gsis elmpl">GSIS - EL/MPL</option>
+            <option value="gsis gfal">GSIS - GFAL</option>
+            <option value="gsis mplcpl">GSIS - MPL/CPL</option>
+            <option value="hmdf premium">HMDF - PREMIUM</option>
+            <option value="hmdf mpl">HMDF - MPL</option>
+            <option value="philhealth">PHILHEALTH</option>
             <option value="sss">SSS</option>
-            <option value="philhealth">PhilHeath</option>
-            <option value="pagibig">Pag-Ibig</option>
-            <option value="gsis">GSIS</option>
-            <option value="loans">Loan</option>
-            <option value="tax">Tax</option>
+            <option value="lbpsl">LBPSL</option>
+            <option value="lwop">LWOP</option>
            </select>
         </div>
         <div class="form-group">

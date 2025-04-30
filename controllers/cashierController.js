@@ -1,3 +1,23 @@
+/**
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ */
 const firebase = require("firebase/app");
 require("firebase/firestore");
 
@@ -271,6 +291,8 @@ const cashier = {
 
  deduction: async (req, res) => {
   const user = req.session.user || null;
+  
+  
   try {
     const employees = await employee.find({campus:user.campus}).lean();
     const deductions = await deduct.find().lean();
@@ -285,8 +307,12 @@ const cashier = {
           }))
         : [];
     });
-
-    res.render('hr/deductions', { employees, months, years });
+    if(user.role === 'accounting'){
+      res.render('accounting/deductions', { employees, months, years });
+    }else{
+      res.render('hr/deductions', { employees, months, years });
+    }
+     
   } catch (error) {
     console.error("Error fetching deductions:", error);
     res.status(500).send("An error occurred while fetching deductions.");

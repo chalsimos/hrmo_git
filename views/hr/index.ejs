@@ -1,3 +1,24 @@
+<!--
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ -->
+
 <%- include('../partials/top') %>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper"> 
@@ -271,18 +292,25 @@
                                       </div>
                                     </div>
                                     <div class="row">
-                                      <div class="col-md-5">
-                                        <label for="Reason">Reason</label>
-                                        <select name="reason" class="form-control">
-                                          <option value="sick leave">Sick Leave</option>
-                                          <option value="educational leave">Educational Leave</option>
+                                      <div class="col-md-6">
+                                        <label for="leaveCategory">Leave Category</label>
+                                        <select name="leaveCategory" class="form-control" id="leaveCategory">
+                                          <option value="" disabled selected>Select Leave Category</option>
+                                          <option value="Vacation Leave">Vacation Leave</option>
+                                          <option value="Sick Leave">Sick Leave</option>
+                                          <option value="Maternity Leave">Maternity Leave</option>
+                                          <option value="Paternity Leave">Paternity Leave</option>
+                                          <option value="Study Leave">Study Leave</option>
+                                          <option value="Parental Leave">Parental Leave</option>
+                                          <option value="Rehabilitation Leave">Rehabilitation Leave</option>
+                                          <option value="Special Emergency Leave">Special Emergency Leave</option>
+                                          <option value="Magna Carta Leave">Magna Carta Leave</option>
+                                          <option value="Leave Without Pay">Leave Without Pay</option>
+                                          <option value="Others">Others</option>
                                         </select>
                                       </div>
-                                      <div class="col-md-7">
-                                        <label for="others">others</label>
-                                        <textarea name="others" class="form-control"></textarea>
-                                      </div>
                                     </div>
+                                    
                                 </div>
                                 <div class="modal-footer">
                                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

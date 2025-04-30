@@ -1,3 +1,24 @@
+<!--
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ -->
+
 <%- include('../partials/top') %>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper"> 
@@ -41,29 +62,111 @@
                                 <th>Complete Name</th>
                                 <th>Position</th>
                                 <th>Campus</th>
+                                <th>Role</th>
                                 <th>Status</th>
+                                <th>Action</th>
                               </tr>
                             </thead>
                             <tbody>
                               <% data.sign.forEach(employee => { %>
                                 <tr>
                                   <td><%= employee.name %></td>
-                                  <td>
-                                    <%= employee.position %>
-                                  </td>
+                                  <td><%= employee.position %></td>
                                   <td><%= employee.campus %></td>
                                   <td>
-                                 <%= employee.status %>
+                                    <% if (employee.docs && employee.docs.length > 0) { %>
+                                      <% employee.docs.forEach(role => { %>
+                                        <%= role.toUpperCase() %><br>
+                                      <% }) %>
+                                    <% } %>
+                                  </td>
+                                  <td><%= employee.status %></td>
+                                  <td>
+                                    <a href="#" class="btn btn-sm btn-info" data-toggle="modal" data-target="#modifyModal<%= employee._id %>">Modify</a>
                                   </td>
                                 </tr>
+                            
+                                <!-- Modify Modal for this employee -->
+                                <div class="modal fade" id="modifyModal<%= employee._id %>" tabindex="-1" role="dialog" aria-labelledby="modifyLabel<%= employee._id %>" aria-hidden="true">
+                                  <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                      <form action="/updatesignatory/<%= employee._id %>" method="POST">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="modifyLabel<%= employee._id %>">Modify Signatory</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="form-group">
+                                            <label>Complete Name</label>
+                                            <input type="text" class="form-control" name="name" value="<%= employee.name %>" required>
+                                          </div>
+                            
+                                          <div class="form-group">
+                                            <label>Position</label>
+                                            <select name="position" class="form-control">
+                                              <option value="CAMPUS EXECUTIVE DIRECTOR" <%= employee.position === 'CAMPUS EXECUTIVE DIRECTOR' ? 'selected' : '' %>>CAMPUS EXECUTIVE DIRECTOR</option>
+                                              <option value="HRMO I" <%= employee.position === 'HRMO I' ? 'selected' : '' %>>HRMO I</option>
+                                              <option value="ADMINISTRATIVE OFFICER I" <%= employee.position === 'ADMINISTRATIVE OFFICER I' ? 'selected' : '' %>>ADMINISTRATIVE OFFICER I</option>
+                                              <option value="ADMINISTRATIVE OFFICER II" <%= employee.position === 'ADMINISTRATIVE OFFICER II' ? 'selected' : '' %>>ADMINISTRATIVE OFFICER II</option>
+                                              <option value="ADMINISTRATIVE OFFICER III" <%= employee.position === 'ADMINISTRATIVE OFFICER III' ? 'selected' : '' %>>ADMINISTRATIVE OFFICER III</option>
+                                              <option value="ADMINISTRATIVE OFFICER IV" <%= employee.position === 'ADMINISTRATIVE OFFICER IV' ? 'selected' : '' %>>ADMINISTRATIVE OFFICER IV</option>
+                                              <option value="ADMINISTRATIVE OFFICER V" <%= employee.position === 'ADMINISTRATIVE OFFICER V' ? 'selected' : '' %>>ADMINISTRATIVE OFFICER V</option>
+                                              <option value="ACCOUNTANT" <%= employee.position === 'ACCOUNTANT' ? 'selected' : '' %>>ACCOUNTANT</option>
+                                            </select>
+                                          </div>
+                                          
+                            
+                                          <div class="form-group">
+                                            <label>Status</label>
+                                            <select name="status" class="form-control">
+                                              <option value="active" <%= employee.status === 'active' ? 'selected' : '' %>>ACTIVE</option>
+                                              <option value="inactive" <%= employee.status === 'inactive' ? 'selected' : '' %>>INACTIVE</option>
+                                            </select>
+                                          </div>
+                            
+                                          <div class="form-group">
+                                            <label>Campus</label>
+                                            <select name="campus" class="form-control">
+                                              <% if(data.cmp.role === 'admin' || data.cmp.role === 'chief'){ %>
+                                                <option value="Calapan" <%= employee.campus === 'Calapan' ? 'selected' : '' %>>CALAPAN</option>
+                                                <option value="Main" <%= employee.campus === 'Main' ? 'selected' : '' %>>MAIN</option>
+                                                <option value="Bongabong" <%= employee.campus === 'Bongabong' ? 'selected' : '' %>>BONGABONG</option>
+                                              <% } else { %>
+                                                <option value="<%= data.cmp.campus %>" selected><%= data.cmp.campus %></option>
+                                              <% } %>
+                                            </select>
+                                          </div>
+                            
+                                          <label>Assign on:</label><br>
+                                          <div class="form-check">
+                                            <input type="checkbox" name="role[]" value="dtr" <%= employee.docs?.includes('dtr') ? 'checked' : '' %>> DTR<br>
+                                            <input type="checkbox" name="role[]" value="srecord" <%= employee.docs?.includes('srecord') ? 'checked' : '' %>> Service Record<br>
+                                            <input type="checkbox" name="role[]" value="payslip" <%= employee.docs?.includes('payslip') ? 'checked' : '' %>> Payslip<br>
+                                            <input type="checkbox" name="role[]" value="locator" <%= employee.docs?.includes('locator') ? 'checked' : '' %>> Locator<br>
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="submit" class="btn btn-success">Save Changes</button>
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                                <!-- End Modify Modal -->
                               <% }); %>
                             </tbody>
+                            
                             <tfoot>
                               <tr>
                                 <th>Complete Name</th>
                                 <th>Position</th>
                                 <th>Campus</th>
+                                <th>Role</th>
                                 <th>Status</th>
+                                <th>Action</th>
                               </tr>
                             </tfoot>
                           </table>
@@ -90,7 +193,14 @@
                                         <div class="col-8">
                                             <label for="position">position</label>
                                             <select name="position" class="form-control">
-                                                <option value="Campus Executive Director">Campus Executive Director</option>
+                                              <option value="CAMPUS EXECUTIVE DIRECTOR">CAMPUS EXECUTIVE DIRECTOR</option>
+                                              <option value="HRMO I">HRMO I</option>
+                                              <option value="ADMINISTRATIVE OFFICER I">ADMINISTRATIVE OFFICER I</option>
+                                              <option value="ADMINISTRATIVE OFFICER II">ADMINISTRATIVE OFFICER II</option>
+                                              <option value="ADMINISTRATIVE OFFICER III">ADMINISTRATIVE OFFICER III</option>
+                                              <option value="ADMINISTRATIVE OFFICER IV">ADMINISTRATIVE OFFICER IV</option>
+                                              <option value="ADMINISTRATIVE OFFICER V">ADMINISTRATIVE OFFICER V</option>
+                                              <option value="ACCOUNTANT">ACCOUNTANT</option>
                                             </select>
                                         </div>
                                       </div>
@@ -106,16 +216,24 @@
                                           <label>Campus</label>
                                           <select class="form-control" name="campus" required>
                                             <% if(data.cmp.role === 'admin' || data.cmp.role === 'chief'){ %>
-                                              <option value="calapan">CALAPAN</option>
-                                              <option value="main">MAIN</option>
-                                              <option value="bongabong">BONGABONG</option>
+                                              <option value="Calapan">CALAPAN</option>
+                                              <option value="Main">MAIN</option>
+                                              <option value="Bongabong">BONGABONG</option>
                                               <% }else {  %>  
                                               <option value="<%= data.cmp.campus %>"><%= data.cmp.campus %></option>
                                             <%}%>
                                           </select>
                                         </div>
                                       </div>
-                      
+                                      <div class="row">
+                                        Assign on: 
+                                        <div class="col-md-8"><br>
+                                          <input type="checkbox" name="role[]" value="dtr">DTR <br>
+                                          <input type="checkbox" name="role[]" value="srecord">Service Record <br>
+                                          <input type="checkbox" name="role[]" value="payslip">Payslip <br>
+                                          <input type="checkbox" name="role[]" value="locator">Locator <br>
+                                        </div>
+                                      </div>
                                     </div>
                                     <!-- /.card-body -->
                       

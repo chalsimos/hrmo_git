@@ -1,3 +1,24 @@
+/**
+ * ================================================
+ *  Project Name : MinSU-HRMO
+ *  Description  : Mindoro State University HR-Management System
+ *  Author       : Christian Cabrera
+ *  Email        : christian.cabrera@minsu.edu.ph
+ *  Date Created : October 05, 2024
+ *  Version      : 1.7.2
+ *  Environment  : Node.js v20+
+ * ================================================
+ *  © 2025 Christian Cabrera. All rights reserved.
+ *  
+ *  This project is the intellectual property of the author.
+ *  No part of this codebase may be copied, modified, distributed,
+ *  or used in any form without the explicit written permission 
+ *  of Christian Cabrera.
+ * 
+ *  Unauthorized use is strictly prohibited.
+ * ================================================
+ */
+
 const express = require("express");
 const router = express.Router();
 const authController = require('../controllers/authController');
@@ -24,7 +45,7 @@ router.post('/send-notifications', async (req, res) => {
   }
 });
 // accounting panel
-
+router.post('/update-single-payroll', roleAuth(['admin', 'accounting']), AccountingController.singlePayroll);
 router.get('/acct/ex-payroll',roleAuth(['admin', 'accounting']), AccountingController.payroll);
 router.get('/acct', AccountingController.index);
 router.post('/validate-password', authController.validate);
@@ -57,6 +78,8 @@ router.get("/position", roleAuth(['admin', 'hr']),  bookController.position);
 router.post("/add-position", roleAuth(['admin', 'hr']),  bookController.addPosition);
 router.post("/update-time", roleAuth(['admin', 'hr']),  bookController.update_time);
 router.post("/file-leave", roleAuth(['admin', 'hr']),  bookController.fileFeave);
+router.post("/vfile-leave", bookController.vFileLeave);
+
 router.get("/leave-report", roleAuth(['admin', 'hr']),  bookController.leaveReport);
 router.get("/leave", bookController.leaveReport);
 router.get("/locator", roleAuth(['admin', 'hr']),  bookController.locator);
@@ -74,13 +97,13 @@ router.post("/batch",  roleAuth(['admin', 'hr']), bookController.batch);
 router.get("/signatories", roleAuth(['admin', 'hr']), bookController.signatories);
 router.post("/addsignatory", roleAuth(['admin', 'hr']), bookController.addSignatory);
 
+router.post('/updatesignatory/:id', bookController.updateSignatory);
 
 // cashier and accounting
 router.get("/cashier", roleAuth(['cashier']), cashierController.index);
 router.get("/accounting/payroll", roleAuth(['cashier']), cashierController.payroll);
 router.get("/accounting/salary", roleAuth(['cashier']), cashierController.salary);
-
-router.get("/accounting/deduction", roleAuth(['admin', 'hr']), cashierController.deduction);
+router.get("/accounting/deduction", roleAuth(['admin', 'hr', 'accounting']), cashierController.deduction);
 router.post("/add-deduction", cashierController.add_deduction);
 router.post("/delete-deduction", cashierController.delete_deduction);
 
@@ -110,5 +133,7 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
 
+// mobile
 
+router.get('/payslip', bookController.payslip);
 module.exports = router;
